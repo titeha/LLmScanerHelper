@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Запустить LLMScanHelper (Debug)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build (Debug)",
+      "program": "${workspaceFolder}/bin/Debug/net10.0-windows/LLMScanHelper.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}

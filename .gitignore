@@ -1,0 +1,48 @@
+
+# .NET / Visual Studio
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Bb]uild/
+log/
+[Bb]uildLogs/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+
+# .NET publish
+publish/
+out/
+
+# Test results
+TestResults/
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# IDE
+*.ipch
+*.vcxproj.filters
+*.vs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+settings.json
+settings.json.bad

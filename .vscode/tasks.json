@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build (Debug)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["build", "-c", "Debug"],
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build (Release)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["build", "-c", "Release"],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "run (Release)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["run", "-c", "Release", "--no-build"],
+      "dependsOn": "build (Release)",
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}
