@@ -24,14 +24,14 @@ namespace LlmScanHelper.Models
 
     public sealed class EstimateResult
     {
-      public List<DeviceEstimate> Devices { get; } = new();
+      public List<DeviceEstimate> Devices { get; } = [];
       public int CpuBlocks;
       public double CpuWeightsGiB;
       public double MtpGiB;
     }
 
-    private const double MiB = 1024.0 * 1024.0;
-    private const double GiB = 1024.0 * 1024.0 * 1024.0;
+    private const double _miB = 1024.0 * 1024.0;
+    private const double _giB = 1024.0 * 1024.0 * 1024.0;
 
     private static double BytesPerElem(string type) => type switch
     {
@@ -69,7 +69,7 @@ namespace LlmScanHelper.Models
         known[i] = gi != null;
         freeMiB[i] = gi?.FreeMiB ?? 0;
         int target = i < fitTargetsMiB.Count ? fitTargetsMiB[i] : 0;
-        budgets[i] = known[i] ? Math.Max(0, freeMiB[i] - target) * MiB : 0;
+        budgets[i] = known[i] ? Math.Max(0, freeMiB[i] - target) * _miB : 0;
       }
 
       // Эмбеддинги условно кладём на первую карту (грубое допущение)
@@ -116,15 +116,15 @@ namespace LlmScanHelper.Models
           Name = gpus.FirstOrDefault(x => x.Id.Equals(id, StringComparison.OrdinalIgnoreCase))?.Name ?? "(не опрошен)",
           Known = known[i],
           BudgetGiB = known[i] ? (freeMiB[i] - (i < fitTargetsMiB.Count ? fitTargetsMiB[i] : 0)) / 1024.0 : 0,
-          WeightsGiB = weights[i] / GiB,
-          KvGiB = kv[i] / GiB,
+          WeightsGiB = weights[i] / _giB,
+          KvGiB = kv[i] / _giB,
           Blocks = blocks[i]
         });
       }
 
       res.CpuBlocks = cpuBlocks;
-      res.CpuWeightsGiB = cpuWeights / GiB;
-      res.MtpGiB = useMtp ? g.MtpSize / GiB : 0;
+      res.CpuWeightsGiB = cpuWeights / _giB;
+      res.MtpGiB = useMtp ? g.MtpSize / _giB : 0;
 
       return res;
     }

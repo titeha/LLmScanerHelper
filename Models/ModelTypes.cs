@@ -33,9 +33,9 @@ namespace LlmScanHelper.Models
 
     public override string ToString() => $"{Id}: {Name} ({FreeMiB}/{TotalMiB} MiB free)";
 
-    public bool IsV100() => Name.IndexOf("V100", StringComparison.OrdinalIgnoreCase) >= 0;
-    public bool IsDesktopRtx() => Name.IndexOf("GeForce", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    Name.IndexOf("RTX", StringComparison.OrdinalIgnoreCase) >= 0;
+    public bool IsV100() => Name.Contains("V100", StringComparison.OrdinalIgnoreCase);
+    public bool IsDesktopRtx() => Name.Contains("GeForce", StringComparison.OrdinalIgnoreCase) ||
+                    Name.Contains("RTX", StringComparison.OrdinalIgnoreCase);
   }
 
   /// <summary>Результат опроса llama-server --list-devices.</summary>

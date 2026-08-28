@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows.Threading;
+
 using LlmScanHelper.Models;
 using LlmScanHelper.Models.Settings;
 
@@ -66,9 +67,11 @@ namespace LlmScanHelper.ViewModels
       get => _selectedModel;
       set
       {
-        if (ReferenceEquals(_selectedModel, value)) return;
+        if (ReferenceEquals(_selectedModel, value))
+          return;
         FlushPendingSave();           // правки старой модели — в её профиль
-        if (!SetProperty(ref _selectedModel, value)) return;
+        if (!SetProperty(ref _selectedModel, value))
+          return;
         _ = LoadModelAsync(value);
       }
     }
@@ -184,7 +187,8 @@ namespace LlmScanHelper.ViewModels
       set
       {
         value = Math.Max(value, BenchDefaults.MinDesktopReserveGiB); // ниже 2 GiB UI не предлагает
-        if (SetProperty(ref _reserveRtxGiB, value)) { UpdateFitTargets(); SaveSoon(); }
+        if (SetProperty(ref _reserveRtxGiB, value))
+        { UpdateFitTargets(); SaveSoon(); }
       }
     }
 
@@ -310,7 +314,8 @@ namespace LlmScanHelper.ViewModels
         value = Math.Clamp(value, 1, 16);
         if (SetProperty(ref _draftMax, value))
         {
-          if (DraftMin > _draftMax) DraftMin = _draftMax; // min никогда не > max
+          if (DraftMin > _draftMax)
+            DraftMin = _draftMax; // min никогда не > max
           OnPropertyChanged(nameof(DraftMin));
           SaveSoon();
         }
@@ -470,7 +475,8 @@ namespace LlmScanHelper.ViewModels
       _allMmproj = res.AllMmproj;
 
       Models.Clear();
-      foreach (var m in res.Models) Models.Add(m);
+      foreach (var m in res.Models)
+        Models.Add(m);
 
       if (Models.Count == 0)
       {
@@ -495,10 +501,14 @@ namespace LlmScanHelper.ViewModels
       {
         _currentPath = null;
         InfoArch = InfoBlocks = InfoMaxCtx = InfoFileSize = InfoMtpSize = InfoQuant = InfoTools = "-";
-        MtpAvailable = false; MtpChecked = false;
-        ReasoningAvailable = false; ReasoningChecked = false;
+        MtpAvailable = false;
+        MtpChecked = false;
+        ReasoningAvailable = false;
+        ReasoningChecked = false;
         JinjaChecked = false;
-        MmprojAvailable = false; MmprojChecked = false; MmprojFiles.Clear();
+        MmprojAvailable = false;
+        MmprojChecked = false;
+        MmprojFiles.Clear();
         StatusText = "Модель не выбрана";
         return;
       }
@@ -510,12 +520,14 @@ namespace LlmScanHelper.ViewModels
       }
       catch (Exception ex)
       {
-        if (seq != _loadSeq) return;
+        if (seq != _loadSeq)
+          return;
         StatusText = "Ошибка: " + ex.Message;
         return;
       }
 
-      if (seq != _loadSeq) return; // уже выбрана другая модель
+      if (seq != _loadSeq)
+        return; // уже выбрана другая модель
 
       _gguf = g;
       _currentPath = m.FullPath;
@@ -532,12 +544,22 @@ namespace LlmScanHelper.ViewModels
           ? Math.Clamp(ms.Context, 1024, MaxContext)
           : Math.Min(BenchDefaults.DefaultContext, MaxContext);
 
-        if (KvOptions.Contains(ms.KvK)) KvK = ms.KvK; else KvK = "q8_0";
-        if (KvOptions.Contains(ms.KvV)) KvV = ms.KvV; else KvV = "q8_0";
-        if (FlashOptions.Contains(ms.Flash)) Flash = ms.Flash; else Flash = "auto";
+        if (KvOptions.Contains(ms.KvK))
+          KvK = ms.KvK;
+        else
+          KvK = "q8_0";
+        if (KvOptions.Contains(ms.KvV))
+          KvV = ms.KvV;
+        else
+          KvV = "q8_0";
+        if (FlashOptions.Contains(ms.Flash))
+          Flash = ms.Flash;
+        else
+          Flash = "auto";
 
         ManualNglMax = Math.Max(1, g.BlockCount + 8);
-        if (ManualNgl > ManualNglMax) ManualNgl = ManualNglMax; // хранимое значение клампим, но не сбрасываем
+        if (ManualNgl > ManualNglMax)
+          ManualNgl = ManualNglMax; // хранимое значение клампим, но не сбрасываем
 
         // MTP: у Q8-квантов недоступен по заявлению издателя
         MtpAvailable = g.HasMtp && !q8;
@@ -546,8 +568,14 @@ namespace LlmScanHelper.ViewModels
         DraftMax = Math.Clamp(ms.DraftMax, 1, 16);
         DraftMin = Math.Clamp(ms.DraftMin, 0, DraftMax);
         DraftP = Math.Clamp(ms.DraftP, 0, 1);
-        if (KvOptions.Contains(ms.DraftK)) DraftK = ms.DraftK; else DraftK = "q8_0";
-        if (KvOptions.Contains(ms.DraftV)) DraftV = ms.DraftV; else DraftV = "q8_0";
+        if (KvOptions.Contains(ms.DraftK))
+          DraftK = ms.DraftK;
+        else
+          DraftK = "q8_0";
+        if (KvOptions.Contains(ms.DraftV))
+          DraftV = ms.DraftV;
+        else
+          DraftV = "q8_0";
 
         ReasoningAvailable = g.HasReasoning;
         ReasoningChecked = g.HasReasoning && ms.ReasoningChecked;
@@ -602,16 +630,15 @@ namespace LlmScanHelper.ViewModels
       MmprojFiles.Clear();
 
       if (m.LocalMmproj.Count > 0)
-      {
         foreach (var p in m.LocalMmproj)
         {
           long size = 0;
-          try { size = new FileInfo(p).Length; } catch { }
+          try
+          { size = new FileInfo(p).Length; }
+          catch { }
           MmprojFiles.Add(new MmprojEntry { FullPath = p, DisplayName = Path.GetFileName(p), FileSize = size, IsLocal = true });
         }
-      }
       else
-      {
         // Рядом с моделью нет — показываем всё найденное в дереве моделей
         foreach (var p in _allMmproj)
         {
@@ -623,7 +650,6 @@ namespace LlmScanHelper.ViewModels
             IsLocal = false
           });
         }
-      }
 
       MmprojAvailable = MmprojFiles.Count > 0;
 
@@ -680,7 +706,8 @@ namespace LlmScanHelper.ViewModels
     private string FindDesktopRtxDevice()
     {
       var d = _gpus.FirstOrDefault(x => x.IsDesktopRtx());
-      if (d != null && !d.Id.Equals(FindV100Device(), StringComparison.OrdinalIgnoreCase)) return d.Id;
+      if (d?.Id.Equals(FindV100Device(), StringComparison.OrdinalIgnoreCase) == false)
+        return d.Id;
       return "CUDA1";
     }
 
@@ -696,8 +723,10 @@ namespace LlmScanHelper.ViewModels
       var info = _gpus.FirstOrDefault(x => x.Id.Equals(deviceId, StringComparison.OrdinalIgnoreCase));
       if (info != null)
       {
-        if (info.IsV100()) return ReserveV100GiB;
-        if (info.IsDesktopRtx()) return Math.Max(ReserveRtxGiB, BenchDefaults.MinDesktopReserveGiB);
+        if (info.IsV100())
+          return ReserveV100GiB;
+        if (info.IsDesktopRtx())
+          return Math.Max(ReserveRtxGiB, BenchDefaults.MinDesktopReserveGiB);
       }
       // Fallback: первая карта — compute V100, вторая — desktop RTX
       return position == 0 ? ReserveV100GiB : Math.Max(ReserveRtxGiB, BenchDefaults.MinDesktopReserveGiB);
@@ -729,7 +758,8 @@ namespace LlmScanHelper.ViewModels
     private void SyncDraftRange()
     {
       // DraftMin max привязан к DraftMax в UI; здесь только страховка значения
-      if (DraftMin > DraftMax) DraftMin = DraftMax;
+      if (DraftMin > DraftMax)
+        DraftMin = DraftMax;
     }
 
     // ==================== Пресеты ====================
@@ -755,7 +785,8 @@ namespace LlmScanHelper.ViewModels
         CacheReuse = 256;
         SsePing = 15;
         Timeout = 7200;
-        if (MtpAvailable) MtpChecked = false;
+        if (MtpAvailable)
+          MtpChecked = false;
         if (ReasoningAvailable)
         {
           ReasoningChecked = true;
@@ -809,8 +840,10 @@ namespace LlmScanHelper.ViewModels
       get => _aliasText;
       set
       {
-        if (!SetProperty(ref _aliasText, value)) return;
-        if (_suppressAliasEdit) return;
+        if (!SetProperty(ref _aliasText, value))
+          return;
+        if (_suppressAliasEdit)
+          return;
         // Ручная правка: фиксируем в профиле модели (регистр сохраняется как ввели)
         if (_currentPath != null)
         {
@@ -839,7 +872,8 @@ namespace LlmScanHelper.ViewModels
 
     private void SaveSoon()
     {
-      if (_suppressSave) return;
+      if (_suppressSave)
+        return;
       SaveTimer.Stop();
       SaveTimer.Start();
     }
@@ -848,8 +882,10 @@ namespace LlmScanHelper.ViewModels
     public void FlushPendingSave()
     {
       _saveTimer?.Stop();
-      if (_suppressSave) return;
-      if (_currentPath != null || Models.Count > 0) SaveNow();
+      if (_suppressSave)
+        return;
+      if (_currentPath != null || Models.Count > 0)
+        SaveNow();
     }
 
     /// <summary>Синхронное сохранение: глобальные параметры + профиль текущей модели.</summary>
@@ -882,7 +918,8 @@ namespace LlmScanHelper.ViewModels
         ReserveV100GiB = gp.ReserveV100GiB;
         ReserveRtxGiB = gp.ReserveRtxGiB;
         ModeIndex = Math.Clamp(gp.ModeIndex, 0, 1);
-        if (SplitModeOptions.Contains(gp.SplitMode)) SplitMode = gp.SplitMode;
+        if (SplitModeOptions.Contains(gp.SplitMode))
+          SplitMode = gp.SplitMode;
         ManualNgl = Math.Max(0, gp.ManualNgl);
         Split0 = Math.Max(0, gp.Split0);
         Split1 = Math.Max(0, gp.Split1);

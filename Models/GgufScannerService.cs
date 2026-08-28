@@ -30,7 +30,7 @@ namespace LlmScanHelper.Models
           {
             var dir = Path.GetDirectoryName(path) ?? "";
             if (!mmprojByDir.TryGetValue(dir, out var list))
-              mmprojByDir[dir] = list = new List<string>();
+              mmprojByDir[dir] = list = [];
             list.Add(path);
             continue;
           }

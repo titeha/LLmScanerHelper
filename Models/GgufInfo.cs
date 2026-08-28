@@ -137,13 +137,9 @@ namespace LlmScanHelper.Models
                      name.IndexOf("nextn", StringComparison.OrdinalIgnoreCase) >= 0;
 
           if (explicitMtp)
-          {
             g.MtpSize += size;
-          }
           else if (name.StartsWith("token_embd", StringComparison.OrdinalIgnoreCase))
-          {
             g.EmbdSize += size;
-          }
           else
           {
             var m = Regex.Match(name, @"^blk\.(\d+)\.");
@@ -199,19 +195,13 @@ namespace LlmScanHelper.Models
       // <|tool▁calls▁begin|>, </tool> и т.п. Обычные слова вида «tools» не считаем.
       var toolTokens = new List<string>();
       if (meta.TryGetValue("tokenizer.ggml.tokens", out var tk) && tk is object[] tka)
-      {
         foreach (var t in tka)
-        {
-          if (t is string ts &&
-            ts.IndexOf("tool", StringComparison.OrdinalIgnoreCase) >= 0 &&
-            Regex.IsMatch(ts, @"tool_call|tool_use|^<\|?[^>]*tool|^\[\s*TOOL",
-              RegexOptions.IgnoreCase) &&
-            !toolTokens.Contains(ts))
-          {
-            if (toolTokens.Count < 3) toolTokens.Add(ts);
-          }
-        }
-      }
+          if (t is string ts
+                      && ts.Contains("tool", StringComparison.OrdinalIgnoreCase)
+                      && Regex.IsMatch(ts, @"tool_call|tool_use|^<\|?[^>]*tool|^\[\s*TOOL", RegexOptions.IgnoreCase)
+                      && !toolTokens.Contains(ts)
+                      && toolTokens.Count < 3)
+            toolTokens.Add(ts);
 
       if (g.HasChatTemplate && markers.Count > 0)
       {

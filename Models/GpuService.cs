@@ -34,7 +34,7 @@ namespace LlmScanHelper.Models
         p.WaitForExit(15000);
 
         var gpus = new List<GpuDeviceInfo>();
-        foreach (string raw in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+        foreach (string raw in output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries))
         {
           var m = DeviceLine.Match(raw);
           if (!m.Success) continue;
