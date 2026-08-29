@@ -14,6 +14,9 @@ namespace LlmScanHelper.ViewModels
   {
     // Имя флага бюджета reasoning гуляет между билдами — правится в ОДНОМ месте.
     private const string ReasoningBudgetFlag = "--reasoning-budget";
+    // Минимальный бюджет reasoning-токенов. runtime не принимает 0 (ошибка старта),
+    // поэтому при включённом reasoning 0 подставляется именно это значение.
+    private const int ReasonBudgetMin = 4096;
 
     // ==================== «Собрать команду» ====================
 
@@ -143,8 +146,12 @@ namespace LlmScanHelper.ViewModels
       if (g.HasReasoning)
       {
         sb.Append(" --reasoning ").Append(ReasoningChecked ? "on" : "off");
-        if (ReasoningChecked && ReasonBudget > 0)
-          sb.Append(" ").Append(ReasoningBudgetFlag).Append(" ").Append((long)ReasonBudget);
+        if (ReasoningChecked)
+        {
+          // runtime не принимает 0 — подставляем минимальное значение
+          var budget = ReasonBudget > 0 ? ReasonBudget : ReasonBudgetMin;
+          sb.Append(" ").Append(ReasoningBudgetFlag).Append(" ").Append((long)budget);
+        }
       }
 
       return sb.ToString();

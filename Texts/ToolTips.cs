@@ -168,8 +168,9 @@ namespace LlmScanHelper.Texts
 
     public const string ReasonBudget =
       "Бюджет reasoning-токенов (флаг задаётся константой ReasoningBudgetFlag).\n" +
-      "Ориентиры: 4–8k в рутине, 16–32k в сложном коде. 0 = флаг не передавать,\n" +
-      "runtime использует свой default.\n" + ServerDoc;
+      "0 — подставляется минимальное значение (runtime не принимает 0, ошибка старта).\n" +
+      "Рекомендация: 4–8k в рутине, 16–32k в сложном коде.\n" +
+      "Дока: " + ServerDoc;
 
     public const string MmprojEnabled =
       "--mmproj: подключить мультимодальный проектор (картинки/видео -> модель).\n" +

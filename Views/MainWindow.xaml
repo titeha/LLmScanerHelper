@@ -398,7 +398,7 @@
                               IsEnabled="{Binding ReasoningAvailable}"
                               Margin="16,0,10,0"
                               ToolTip="{x:Static t:ToolTips.Reasoning}" />
-                    <TextBlock Text="reasoning budget (0=не передавать):"
+                    <TextBlock Text="reasoning budget (0 → мин.):"
                                Style="{StaticResource Lbl}" />
                     <mah:NumericUpDown Width="100"
                                     Minimum="0"
