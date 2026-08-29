@@ -18,7 +18,6 @@ namespace LlmScanHelper.ViewModels
     private readonly SettingsStore _store = new();
     private GgufInfo? _gguf;
     private List<GpuDeviceInfo> _gpus = new();
-    private List<MmprojEntry> _allMmproj = new();
     private string? _currentPath;          // путь текущей модели (ключ по-модельного профиля)
     private bool _suppressSave;            // массовое применение — без сохранения
     private bool _suppressAliasEdit;       // программная установка алиаса
@@ -473,8 +472,6 @@ namespace LlmScanHelper.ViewModels
         return;
       }
 
-      _allMmproj = res.AllMmproj;
-
       Models.Clear();
       foreach (var m in res.Models)
         Models.Add(m);
@@ -630,27 +627,15 @@ namespace LlmScanHelper.ViewModels
     {
       MmprojFiles.Clear();
 
-      if (m.LocalMmproj.Count > 0)
-        foreach (var p in m.LocalMmproj)
-        {
-          long size = 0;
-          try
-          { size = new FileInfo(p).Length; }
-          catch { }
-          MmprojFiles.Add(new MmprojEntry { FullPath = p, DisplayName = Path.GetFileName(p), FileSize = size, IsLocal = true });
-        }
-      else
-        // Рядом с моделью нет — показываем всё найденное в дереве моделей
-        foreach (var p in _allMmproj)
-        {
-          MmprojFiles.Add(new MmprojEntry
-          {
-            FullPath = p.FullPath,
-            DisplayName = p.DisplayName + "  (в дереве моделей)",
-            FileSize = p.FileSize,
-            IsLocal = false
-          });
-        }
+      // mmproj-файлы ищем только в той же папке, где лежит модель
+      foreach (var p in m.LocalMmproj)
+      {
+        long size = 0;
+        try
+        { size = new FileInfo(p).Length; }
+        catch { }
+        MmprojFiles.Add(new MmprojEntry { FullPath = p, DisplayName = Path.GetFileName(p), FileSize = size });
+      }
 
       MmprojAvailable = MmprojFiles.Count > 0;
 

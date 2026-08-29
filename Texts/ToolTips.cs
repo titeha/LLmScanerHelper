@@ -173,13 +173,12 @@ namespace LlmScanHelper.Texts
 
     public const string MmprojEnabled =
       "--mmproj: подключить мультимодальный проектор (картинки/видео -> модель).\n" +
-      "Файлы mmproj*.gguf ищутся рядом с моделью, если их нет — по всему дереву моделей.\n" +
+      "Файлы mmproj*.gguf ищутся только в папке модели.\n" +
       "Влияние: проектор загружается дополнительно (см. его размер рядом).\n" +
       "Дока: " + AppDefaults.MtmdReadmeUrl;
 
     public const string MmprojCombo =
-      "Выбор mmproj-файла. Локальные (в папке модели) — в приоритете;\n" +
-      "варианты из дерева моделей помечены «(в дереве)».\n" +
+      "Выбор mmproj-файла. Ищутся только в папке модели.\n" +
       "Дока: " + AppDefaults.MtmdReadmeUrl;
 
     public const string SamplingEnabled =

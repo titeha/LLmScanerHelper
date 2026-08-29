@@ -445,7 +445,7 @@
                              Foreground="DarkGreen"
                              Margin="0,4,0,0"
                              ToolTip="{x:Static t:ToolTips.MmprojEnabled}" />
-                  <TextBlock Text="Поиск: сначала рядом с моделью; если нет — по всему дереву моделей (варианты помечены «в дереве»)."
+                  <TextBlock Text="Поиск: mmproj-файлы ищутся только в папке модели."
                              Style="{StaticResource HintText}" />
                 </StackPanel>
               </GroupBox>

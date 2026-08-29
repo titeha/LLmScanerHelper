@@ -10,7 +10,6 @@ namespace LlmScanHelper.Models
     public sealed class ScanResult
     {
       public List<ModelEntry> Models { get; init; } = new();
-      public List<MmprojEntry> AllMmproj { get; init; } = new(); // все mmproj в дереве
       public string? Error { get; init; }
     }
 
@@ -19,7 +18,6 @@ namespace LlmScanHelper.Models
       try
       {
         var models = new List<ModelEntry>();
-        var allMmproj = new List<MmprojEntry>();
         // папка (без регистра) -> mmproj-файлы в ней
         var mmprojByDir = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
@@ -50,34 +48,18 @@ namespace LlmScanHelper.Models
 
         models.Sort((x, y) => string.Compare(x.FullPath, y.FullPath, StringComparison.OrdinalIgnoreCase));
 
-        foreach (var kv in mmprojByDir)
-        {
-          kv.Value.Sort(StringComparer.OrdinalIgnoreCase);
-          foreach (var p in kv.Value)
-          {
-            long size = 0;
-            try { size = new FileInfo(p).Length; } catch { }
-            allMmproj.Add(new MmprojEntry
-            {
-              FullPath = p,
-              DisplayName = Path.GetFileName(p),
-              FileSize = size,
-              IsLocal = true
-            });
-          }
-        }
-
-        allMmproj.Sort((x, y) => string.Compare(x.FullPath, y.FullPath, StringComparison.OrdinalIgnoreCase));
-
-        // Локальные mmproj для каждой модели (та же папка)
+        // Локальные mmproj для каждой модели (та же папка) — только они и нужны
         foreach (var m in models)
         {
           var dir = Path.GetDirectoryName(m.FullPath) ?? "";
           if (mmprojByDir.TryGetValue(dir, out var list))
+          {
+            list.Sort(StringComparer.OrdinalIgnoreCase);
             m.LocalMmproj.AddRange(list);
+          }
         }
 
-        return new ScanResult { Models = models, AllMmproj = allMmproj };
+        return new ScanResult { Models = models };
       }
       catch (Exception ex)
       {

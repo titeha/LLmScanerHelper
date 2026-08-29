@@ -18,7 +18,6 @@ namespace LlmScanHelper.Models
     public string FullPath { get; init; } = "";
     public string DisplayName { get; init; } = "";
     public long FileSize { get; init; }
-    public bool IsLocal { get; init; } // найден в папке самой модели
 
     public override string ToString() => DisplayName;
   }
