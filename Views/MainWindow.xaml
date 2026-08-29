@@ -1,6 +1,7 @@
-<Window x:Class="LlmScanHelper.Views.MainWindow"
+<mah:MetroWindow x:Class="LlmScanHelper.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:m="clr-namespace:LlmScanHelper.Models"
         xmlns:t="clr-namespace:LlmScanHelper.Texts"
         xmlns:ctrl="clr-namespace:LlmScanHelper.Controls"
@@ -12,7 +13,10 @@
         MinHeight="720"
         WindowStartupLocation="CenterScreen"
         FontSize="13"
-        UseLayoutRounding="True">
+        UseLayoutRounding="True"
+        ShowTitleBar="True"
+        TitleBarHeight="30"
+        WindowTransitionsEnabled="False">
 
   <TabControl SelectedIndex="{Binding SelectedTabIndex}">
 
@@ -744,4 +748,4 @@
     </TabItem>
 
   </TabControl>
-</Window>
+</mah:MetroWindow>

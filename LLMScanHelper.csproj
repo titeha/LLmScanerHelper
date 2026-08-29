@@ -15,4 +15,9 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MahApps.Metro" Version="2.4.11" />
+    <PackageReference Include="Ti-Soft.MvvmUtilites" Version="1.0.0" />
+  </ItemGroup>
+
 </Project>

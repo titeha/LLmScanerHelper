@@ -1,9 +1,10 @@
 using System.Windows;
 using LlmScanHelper.ViewModels;
+using MahApps.Metro.Controls;
 
 namespace LlmScanHelper.Views
 {
-  public partial class MainWindow : Window
+  public partial class MainWindow : MetroWindow
   {
     public MainWindow()
     {

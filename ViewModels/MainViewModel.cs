@@ -4,6 +4,7 @@ using System.Windows.Threading;
 
 using LlmScanHelper.Models;
 using LlmScanHelper.Models.Settings;
+using MvvmUtilites;
 
 namespace LlmScanHelper.ViewModels
 {
@@ -56,7 +57,7 @@ namespace LlmScanHelper.ViewModels
     public string ModelsRoot
     {
       get => _modelsRoot;
-      set { if (SetProperty(ref _modelsRoot, value)) SaveSoon(); }
+      set { if (Set(ref _modelsRoot, value)) SaveSoon(); }
     }
 
     public ObservableCollection<ModelEntry> Models { get; } = new();
@@ -70,7 +71,7 @@ namespace LlmScanHelper.ViewModels
         if (ReferenceEquals(_selectedModel, value))
           return;
         FlushPendingSave();           // правки старой модели — в её профиль
-        if (!SetProperty(ref _selectedModel, value))
+        if (!Set(ref _selectedModel, value))
           return;
         _ = LoadModelAsync(value);
       }
@@ -80,7 +81,7 @@ namespace LlmScanHelper.ViewModels
     public string StatusText
     {
       get => _statusText;
-      set => SetProperty(ref _statusText, value);
+      set => Set(ref _statusText, value);
     }
 
     public string[] KvOptions { get; } = { "f16", "q8_0", "q4_0" };
@@ -91,25 +92,25 @@ namespace LlmScanHelper.ViewModels
     // ==================== Информация о модели ====================
 
     private string _infoArch = "-";
-    public string InfoArch { get => _infoArch; private set => SetProperty(ref _infoArch, value); }
+    public string InfoArch { get => _infoArch; private set => Set(ref _infoArch, value); }
 
     private string _infoBlocks = "-";
-    public string InfoBlocks { get => _infoBlocks; private set => SetProperty(ref _infoBlocks, value); }
+    public string InfoBlocks { get => _infoBlocks; private set => Set(ref _infoBlocks, value); }
 
     private string _infoMaxCtx = "-";
-    public string InfoMaxCtx { get => _infoMaxCtx; private set => SetProperty(ref _infoMaxCtx, value); }
+    public string InfoMaxCtx { get => _infoMaxCtx; private set => Set(ref _infoMaxCtx, value); }
 
     private string _infoFileSize = "-";
-    public string InfoFileSize { get => _infoFileSize; private set => SetProperty(ref _infoFileSize, value); }
+    public string InfoFileSize { get => _infoFileSize; private set => Set(ref _infoFileSize, value); }
 
     private string _infoMtpSize = "-";
-    public string InfoMtpSize { get => _infoMtpSize; private set => SetProperty(ref _infoMtpSize, value); }
+    public string InfoMtpSize { get => _infoMtpSize; private set => Set(ref _infoMtpSize, value); }
 
     private string _infoQuant = "-";
-    public string InfoQuant { get => _infoQuant; private set => SetProperty(ref _infoQuant, value); }
+    public string InfoQuant { get => _infoQuant; private set => Set(ref _infoQuant, value); }
 
     private string _infoTools = "-";
-    public string InfoTools { get => _infoTools; private set => SetProperty(ref _infoTools, value); }
+    public string InfoTools { get => _infoTools; private set => Set(ref _infoTools, value); }
 
     // ==================== Контекст / KV / Attention ====================
 
@@ -117,7 +118,7 @@ namespace LlmScanHelper.ViewModels
     public int MaxContext
     {
       get => _maxContext;
-      private set { if (SetProperty(ref _maxContext, value)) { OnPropertyChanged(nameof(ContextTick)); OnPropertyChanged(nameof(ContextLarge)); } }
+      private set { if (Set(ref _maxContext, value)) { OnPropertyChanged(nameof(ContextTick)); OnPropertyChanged(nameof(ContextLarge)); } }
     }
 
     public int ContextTick => Math.Max(4096, MaxContext / 30);
@@ -127,17 +128,17 @@ namespace LlmScanHelper.ViewModels
     public int Context
     {
       get => _context;
-      set { value = Math.Clamp(value, 1024, MaxContext); if (SetProperty(ref _context, value)) SaveSoon(); }
+      set { value = Math.Clamp(value, 1024, MaxContext); if (Set(ref _context, value)) SaveSoon(); }
     }
 
     private string _kvK = "q8_0";
-    public string KvK { get => _kvK; set { if (SetProperty(ref _kvK, value)) SaveSoon(); } }
+    public string KvK { get => _kvK; set { if (Set(ref _kvK, value)) SaveSoon(); } }
 
     private string _kvV = "q8_0";
-    public string KvV { get => _kvV; set { if (SetProperty(ref _kvV, value)) SaveSoon(); } }
+    public string KvV { get => _kvV; set { if (Set(ref _kvV, value)) SaveSoon(); } }
 
     private string _flash = "auto";
-    public string Flash { get => _flash; set { if (SetProperty(ref _flash, value)) SaveSoon(); } }
+    public string Flash { get => _flash; set { if (Set(ref _flash, value)) SaveSoon(); } }
 
     // ==================== GPU layout ====================
 
@@ -147,7 +148,7 @@ namespace LlmScanHelper.ViewModels
       get => _modeIndex;
       set
       {
-        if (SetProperty(ref _modeIndex, value))
+        if (Set(ref _modeIndex, value))
         {
           OnPropertyChanged(nameof(AutoModeActive));
           OnPropertyChanged(nameof(ManualModeActive));
@@ -167,17 +168,17 @@ namespace LlmScanHelper.ViewModels
     public string DevicesText
     {
       get => _devicesText;
-      set { if (SetProperty(ref _devicesText, value)) { UpdateFitTargets(); SaveSoon(); } }
+      set { if (Set(ref _devicesText, value)) { UpdateFitTargets(); SaveSoon(); } }
     }
 
     private string _splitMode = "layer";
-    public string SplitMode { get => _splitMode; set { if (SetProperty(ref _splitMode, value)) SaveSoon(); } }
+    public string SplitMode { get => _splitMode; set { if (Set(ref _splitMode, value)) SaveSoon(); } }
 
     private double _reserveV100GiB = BenchDefaults.SafeReserveV100GiB;
     public double ReserveV100GiB
     {
       get => _reserveV100GiB;
-      set { if (SetProperty(ref _reserveV100GiB, value)) { UpdateFitTargets(); SaveSoon(); } }
+      set { if (Set(ref _reserveV100GiB, value)) { UpdateFitTargets(); SaveSoon(); } }
     }
 
     private double _reserveRtxGiB = BenchDefaults.SafeReserveRtxGiB;
@@ -187,78 +188,78 @@ namespace LlmScanHelper.ViewModels
       set
       {
         value = Math.Max(value, BenchDefaults.MinDesktopReserveGiB); // ниже 2 GiB UI не предлагает
-        if (SetProperty(ref _reserveRtxGiB, value))
+        if (Set(ref _reserveRtxGiB, value))
         { UpdateFitTargets(); SaveSoon(); }
       }
     }
 
     private string _fitTargetsText = "fit-target: -";
-    public string FitTargetsText { get => _fitTargetsText; private set => SetProperty(ref _fitTargetsText, value); }
+    public string FitTargetsText { get => _fitTargetsText; private set => Set(ref _fitTargetsText, value); }
 
     private int _manualNglMax = 512;
     public int ManualNglMax
     {
       get => _manualNglMax;
-      private set { if (SetProperty(ref _manualNglMax, value)) OnPropertyChanged(nameof(ManualNgl)); }
+      private set { if (Set(ref _manualNglMax, value)) OnPropertyChanged(nameof(ManualNgl)); }
     }
 
     private int _manualNgl = 0;
     public int ManualNgl
     {
       get => _manualNgl;
-      set { value = Math.Clamp(value, 0, ManualNglMax); if (SetProperty(ref _manualNgl, value)) SaveSoon(); }
+      set { value = Math.Clamp(value, 0, ManualNglMax); if (Set(ref _manualNgl, value)) SaveSoon(); }
     }
 
     private int _split0 = 3;
-    public int Split0 { get => _split0; set { if (SetProperty(ref _split0, value)) SaveSoon(); } }
+    public int Split0 { get => _split0; set { if (Set(ref _split0, value)) SaveSoon(); } }
 
     private int _split1 = 1;
-    public int Split1 { get => _split1; set { if (SetProperty(ref _split1, value)) SaveSoon(); } }
+    public int Split1 { get => _split1; set { if (Set(ref _split1, value)) SaveSoon(); } }
 
     // ==================== GPU ====================
 
     private string _gpuSummaryText = "GPU: не опрошены";
-    public string GpuSummaryText { get => _gpuSummaryText; private set => SetProperty(ref _gpuSummaryText, value); }
+    public string GpuSummaryText { get => _gpuSummaryText; private set => Set(ref _gpuSummaryText, value); }
 
     // ==================== Производительность / агент ====================
 
     private int _batch = BenchDefaults.DefaultBatch;
-    public int Batch { get => _batch; set { if (SetProperty(ref _batch, value)) SaveSoon(); } }
+    public int Batch { get => _batch; set { if (Set(ref _batch, value)) SaveSoon(); } }
 
     private int _ubatch = BenchDefaults.DefaultUBatch;
-    public int UBatch { get => _ubatch; set { if (SetProperty(ref _ubatch, value)) SaveSoon(); } }
+    public int UBatch { get => _ubatch; set { if (Set(ref _ubatch, value)) SaveSoon(); } }
 
     private int _slots = BenchDefaults.DefaultSlots;
-    public int Slots { get => _slots; set { if (SetProperty(ref _slots, value)) SaveSoon(); } }
+    public int Slots { get => _slots; set { if (Set(ref _slots, value)) SaveSoon(); } }
 
     private int _threads = 0;
-    public int Threads { get => _threads; set { if (SetProperty(ref _threads, value)) SaveSoon(); } }
+    public int Threads { get => _threads; set { if (Set(ref _threads, value)) SaveSoon(); } }
 
     private int _threadsBatch = 0;
-    public int ThreadsBatch { get => _threadsBatch; set { if (SetProperty(ref _threadsBatch, value)) SaveSoon(); } }
+    public int ThreadsBatch { get => _threadsBatch; set { if (Set(ref _threadsBatch, value)) SaveSoon(); } }
 
     private bool _promptCache = true;
-    public bool PromptCache { get => _promptCache; set { if (SetProperty(ref _promptCache, value)) SaveSoon(); } }
+    public bool PromptCache { get => _promptCache; set { if (Set(ref _promptCache, value)) SaveSoon(); } }
 
     private int _cacheReuse = BenchDefaults.DefaultCacheReuse;
-    public int CacheReuse { get => _cacheReuse; set { if (SetProperty(ref _cacheReuse, value)) SaveSoon(); } }
+    public int CacheReuse { get => _cacheReuse; set { if (Set(ref _cacheReuse, value)) SaveSoon(); } }
 
     private int _ssePing = BenchDefaults.DefaultSsePing;
-    public int SsePing { get => _ssePing; set { if (SetProperty(ref _ssePing, value)) SaveSoon(); } }
+    public int SsePing { get => _ssePing; set { if (Set(ref _ssePing, value)) SaveSoon(); } }
 
     private int _timeout = BenchDefaults.DefaultTimeout;
-    public int Timeout { get => _timeout; set { if (SetProperty(ref _timeout, value)) SaveSoon(); } }
+    public int Timeout { get => _timeout; set { if (Set(ref _timeout, value)) SaveSoon(); } }
 
     private bool _perf = true;
-    public bool Perf { get => _perf; set { if (SetProperty(ref _perf, value)) SaveSoon(); } }
+    public bool Perf { get => _perf; set { if (Set(ref _perf, value)) SaveSoon(); } }
 
     // ==================== MTP / reasoning / server ====================
 
     private string _host = BenchDefaults.DefaultHost;
-    public string Host { get => _host; set { if (SetProperty(ref _host, value)) SaveSoon(); } }
+    public string Host { get => _host; set { if (Set(ref _host, value)) SaveSoon(); } }
 
     private int _port = BenchDefaults.DefaultPort;
-    public int Port { get => _port; set { if (SetProperty(ref _port, value)) SaveSoon(); } }
+    public int Port { get => _port; set { if (Set(ref _port, value)) SaveSoon(); } }
 
     private bool _mtpAvailable;
     public bool MtpAvailable
@@ -266,7 +267,7 @@ namespace LlmScanHelper.ViewModels
       get => _mtpAvailable;
       private set
       {
-        if (SetProperty(ref _mtpAvailable, value))
+        if (Set(ref _mtpAvailable, value))
         {
           OnPropertyChanged(nameof(MtpLockReason));
           OnPropertyChanged(nameof(MtpToolTip));
@@ -281,7 +282,7 @@ namespace LlmScanHelper.ViewModels
       get => _mtpChecked;
       set
       {
-        if (SetProperty(ref _mtpChecked, value))
+        if (Set(ref _mtpChecked, value))
         {
           OnPropertyChanged(nameof(IsMtpControlsEnabled));
           SyncDraftRange();
@@ -312,7 +313,7 @@ namespace LlmScanHelper.ViewModels
       set
       {
         value = Math.Clamp(value, 1, 16);
-        if (SetProperty(ref _draftMax, value))
+        if (Set(ref _draftMax, value))
         {
           if (DraftMin > _draftMax)
             DraftMin = _draftMax; // min никогда не > max
@@ -326,29 +327,29 @@ namespace LlmScanHelper.ViewModels
     public int DraftMin
     {
       get => _draftMin;
-      set { value = Math.Clamp(value, 0, DraftMax); if (SetProperty(ref _draftMin, value)) SaveSoon(); }
+      set { value = Math.Clamp(value, 0, DraftMax); if (Set(ref _draftMin, value)) SaveSoon(); }
     }
 
     private double _draftP = 0;
-    public double DraftP { get => _draftP; set { if (SetProperty(ref _draftP, value)) SaveSoon(); } }
+    public double DraftP { get => _draftP; set { if (Set(ref _draftP, value)) SaveSoon(); } }
 
     private string _draftK = "q8_0";
-    public string DraftK { get => _draftK; set { if (SetProperty(ref _draftK, value)) SaveSoon(); } }
+    public string DraftK { get => _draftK; set { if (Set(ref _draftK, value)) SaveSoon(); } }
 
     private string _draftV = "q8_0";
-    public string DraftV { get => _draftV; set { if (SetProperty(ref _draftV, value)) SaveSoon(); } }
+    public string DraftV { get => _draftV; set { if (Set(ref _draftV, value)) SaveSoon(); } }
 
     private bool _reasoningAvailable;
-    public bool ReasoningAvailable { get => _reasoningAvailable; private set => SetProperty(ref _reasoningAvailable, value); }
+    public bool ReasoningAvailable { get => _reasoningAvailable; private set => Set(ref _reasoningAvailable, value); }
 
     private bool _reasoningChecked;
-    public bool ReasoningChecked { get => _reasoningChecked; set { if (SetProperty(ref _reasoningChecked, value)) SaveSoon(); } }
+    public bool ReasoningChecked { get => _reasoningChecked; set { if (Set(ref _reasoningChecked, value)) SaveSoon(); } }
 
     private int _reasonBudget = 4096;
     public int ReasonBudget
     {
       get => _reasonBudget;
-      set { value = Math.Clamp(value, 0, 1_000_000); if (SetProperty(ref _reasonBudget, value)) SaveSoon(); }
+      set { value = Math.Clamp(value, 0, 1_000_000); if (Set(ref _reasonBudget, value)) SaveSoon(); }
     }
 
     // --jinja: родной chat-шаблон GGUF (нужен для tool-calls/функций в OpenAI API).
@@ -361,7 +362,7 @@ namespace LlmScanHelper.ViewModels
       get => _jinjaChecked;
       set
       {
-        if (SetProperty(ref _jinjaChecked, value))
+        if (Set(ref _jinjaChecked, value))
         {
           if (!_suppressJinjaEdit && _currentPath != null)
           {
@@ -379,72 +380,72 @@ namespace LlmScanHelper.ViewModels
     public ObservableCollection<MmprojEntry> MmprojFiles { get; } = new();
 
     private bool _mmprojAvailable;
-    public bool MmprojAvailable { get => _mmprojAvailable; private set => SetProperty(ref _mmprojAvailable, value); }
+    public bool MmprojAvailable { get => _mmprojAvailable; private set => Set(ref _mmprojAvailable, value); }
 
     private MmprojEntry? _selectedMmproj;
     public MmprojEntry? SelectedMmproj
     {
       get => _selectedMmproj;
-      set { if (SetProperty(ref _selectedMmproj, value)) { UpdateMmprojInfo(); SaveSoon(); } }
+      set { if (Set(ref _selectedMmproj, value)) { UpdateMmprojInfo(); SaveSoon(); } }
     }
 
     private bool _mmprojChecked;
     public bool MmprojChecked
     {
       get => _mmprojChecked;
-      set { if (SetProperty(ref _mmprojChecked, value)) SaveSoon(); }
+      set { if (Set(ref _mmprojChecked, value)) SaveSoon(); }
     }
 
     private string _mmprojInfoText = "";
-    public string MmprojInfoText { get => _mmprojInfoText; private set => SetProperty(ref _mmprojInfoText, value); }
+    public string MmprojInfoText { get => _mmprojInfoText; private set => Set(ref _mmprojInfoText, value); }
 
     // ==================== Sampling (параметры разработчика) ====================
 
     private bool _samplingEnabled = BenchDefaults.DefaultSamplingEnabled;
-    public bool SamplingEnabled { get => _samplingEnabled; set { if (SetProperty(ref _samplingEnabled, value)) SaveSoon(); } }
+    public bool SamplingEnabled { get => _samplingEnabled; set { if (Set(ref _samplingEnabled, value)) SaveSoon(); } }
 
     private double _temp = BenchDefaults.DefaultTemp;
-    public double Temp { get => _temp; set { if (SetProperty(ref _temp, value)) SaveSoon(); } }
+    public double Temp { get => _temp; set { if (Set(ref _temp, value)) SaveSoon(); } }
 
     private int _topK = BenchDefaults.DefaultTopK;
-    public int TopK { get => _topK; set { if (SetProperty(ref _topK, value)) SaveSoon(); } }
+    public int TopK { get => _topK; set { if (Set(ref _topK, value)) SaveSoon(); } }
 
     private double _topP = BenchDefaults.DefaultTopP;
-    public double TopP { get => _topP; set { if (SetProperty(ref _topP, value)) SaveSoon(); } }
+    public double TopP { get => _topP; set { if (Set(ref _topP, value)) SaveSoon(); } }
 
     private double _minP = BenchDefaults.DefaultMinP;
-    public double MinP { get => _minP; set { if (SetProperty(ref _minP, value)) SaveSoon(); } }
+    public double MinP { get => _minP; set { if (Set(ref _minP, value)) SaveSoon(); } }
 
     private double _repeatPenalty = BenchDefaults.DefaultRepeatPenalty;
-    public double RepeatPenalty { get => _repeatPenalty; set { if (SetProperty(ref _repeatPenalty, value)) SaveSoon(); } }
+    public double RepeatPenalty { get => _repeatPenalty; set { if (Set(ref _repeatPenalty, value)) SaveSoon(); } }
 
     private int _repeatLastN = BenchDefaults.DefaultRepeatLastN;
-    public int RepeatLastN { get => _repeatLastN; set { if (SetProperty(ref _repeatLastN, value)) SaveSoon(); } }
+    public int RepeatLastN { get => _repeatLastN; set { if (Set(ref _repeatLastN, value)) SaveSoon(); } }
 
     private double _presencePenalty = BenchDefaults.DefaultPresencePenalty;
-    public double PresencePenalty { get => _presencePenalty; set { if (SetProperty(ref _presencePenalty, value)) SaveSoon(); } }
+    public double PresencePenalty { get => _presencePenalty; set { if (Set(ref _presencePenalty, value)) SaveSoon(); } }
 
     private double _frequencyPenalty = BenchDefaults.DefaultFrequencyPenalty;
-    public double FrequencyPenalty { get => _frequencyPenalty; set { if (SetProperty(ref _frequencyPenalty, value)) SaveSoon(); } }
+    public double FrequencyPenalty { get => _frequencyPenalty; set { if (Set(ref _frequencyPenalty, value)) SaveSoon(); } }
 
     private int _seed = BenchDefaults.DefaultSeed;
-    public int Seed { get => _seed; set { if (SetProperty(ref _seed, value)) SaveSoon(); } }
+    public int Seed { get => _seed; set { if (Set(ref _seed, value)) SaveSoon(); } }
 
     // ==================== Выходы ====================
 
     private string _launchCommand = "(выбери модель и нажми «Собрать команду»)";
-    public string LaunchCommand { get => _launchCommand; private set => SetProperty(ref _launchCommand, value); }
+    public string LaunchCommand { get => _launchCommand; private set => Set(ref _launchCommand, value); }
 
     public ObservableCollection<string> Warnings { get; } = new();
 
     private string _copyStatusText = "";
-    public string CopyStatusText { get => _copyStatusText; private set => SetProperty(ref _copyStatusText, value); }
+    public string CopyStatusText { get => _copyStatusText; private set => Set(ref _copyStatusText, value); }
 
     private string _layerEstimateText = "Оценка: модель не выбрана.";
-    public string LayerEstimateText { get => _layerEstimateText; private set => SetProperty(ref _layerEstimateText, value); }
+    public string LayerEstimateText { get => _layerEstimateText; private set => Set(ref _layerEstimateText, value); }
 
     private int _selectedTabIndex;
-    public int SelectedTabIndex { get => _selectedTabIndex; set { if (SetProperty(ref _selectedTabIndex, value)) SaveSoon(); } }
+    public int SelectedTabIndex { get => _selectedTabIndex; set { if (Set(ref _selectedTabIndex, value)) SaveSoon(); } }
 
     // ==================== Команды ====================
 
@@ -840,7 +841,7 @@ namespace LlmScanHelper.ViewModels
       get => _aliasText;
       set
       {
-        if (!SetProperty(ref _aliasText, value))
+        if (!Set(ref _aliasText, value))
           return;
         if (_suppressAliasEdit)
           return;
