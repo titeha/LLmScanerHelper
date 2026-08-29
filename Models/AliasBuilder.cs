@@ -6,13 +6,22 @@ namespace LlmScanHelper.Models
   /// Генератор алиаса из имени файла.
   ///
   /// Правила (v4):
-  ///  • регистр НЕ приводится к нижнему — GPT, UD, Qwen3 и т.п. остаются как есть;
+  ///  • регистр НЕ приводится — GPT, UD, Qwen3 и т.п. остаются как есть;
   ///  • разделители остаются как в имени файла (дефисы — дефисами, подчёркивания — подчёркиваниями);
   ///  • мусорные токены издателя (gguf/unsloth/lmstudio/mradermacher) выкидываются;
-  ///  • квант-теги сокращаются как в LINQPad-версии: Q4_K_M → Q4, Q6_K → Q6, Q8_0 → Q8.
+  ///  • всё, что намекает на квантование/точность (Q8_0, Q6_K, Q4_K_M, Q4_K_L,
+  ///    Q4_K_XL, Q8_K_XL, MXFP4, BF16, F16, F32), убирается целиком, вместе с
+  ///    разделителем перед ним — в алиасе остаётся только модель и её свойства.
   /// </summary>
   public static class AliasBuilder
   {
+    // Квант-теги и теги точности: Q-семейство (Q4_0, Q4_K_M, Q8_K_XL, …),
+    // MXFP4, BF16, F16, F32. Разделитель перед тегом съедается, чтобы не
+    // оставалось висящих дефисов/подчёркиваний.
+    private static readonly Regex QuantTokens = new Regex(
+        @"[\-_.\s]?(?:(?:Q[0-9](?:_[A-Za-z0-9]+)*|MXFP[0-9]|BF16|F16|F32))",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
     public static string MakeAlias(string fileName)
     {
       if (string.IsNullOrWhiteSpace(fileName)) return "";
@@ -26,11 +35,8 @@ namespace LlmScanHelper.Models
         @"(?<=[\-_.\s]|^)(?:gguf|unsloth|lmstudio|mradermacher)(?=[\-_.\s]|$)",
         "", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
-      // Квант-теги (как в оригинальном MakeAlias, но с сохранением регистра)
-      s = Regex.Replace(s, @"Q4[._\-]?K[._\-]?M", "Q4", RegexOptions.IgnoreCase);
-      s = Regex.Replace(s, @"Q5[._\-]?K[._\-]?M", "Q5", RegexOptions.IgnoreCase);
-      s = Regex.Replace(s, @"Q6[._\-]?K(?![A-Za-z0-9])", "Q6", RegexOptions.IgnoreCase);
-      s = Regex.Replace(s, @"Q8[._\-]?0(?![A-Za-z0-9])", "Q8", RegexOptions.IgnoreCase);
+      // Квант-теги/теги точности — убираем вместе с разделителем перед ними
+      s = QuantTokens.Replace(s, "");
 
       // Схлопывание повторов разделителей и обрезка мусора по краям
       s = Regex.Replace(s, @"([\-_.\s]){2,}", "$1");
