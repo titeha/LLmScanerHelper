@@ -8,7 +8,7 @@ namespace LlmScanHelper.Texts
   /// </summary>
   public static class ToolTips
   {
-    private const string ServerDoc = "Дока: " + BenchDefaults.ServerReadmeUrl;
+    private const string ServerDoc = "Дока: " + AppDefaults.ServerReadmeUrl;
 
     public const string ModelsRoot =
       "Корневая папка, в которой рекурсивно ищутся *.gguf (кроме mmproj*).\n" +
@@ -175,12 +175,12 @@ namespace LlmScanHelper.Texts
       "--mmproj: подключить мультимодальный проектор (картинки/видео -> модель).\n" +
       "Файлы mmproj*.gguf ищутся рядом с моделью, если их нет — по всему дереву моделей.\n" +
       "Влияние: проектор загружается дополнительно (см. его размер рядом).\n" +
-      "Дока: " + BenchDefaults.MtmdReadmeUrl;
+      "Дока: " + AppDefaults.MtmdReadmeUrl;
 
     public const string MmprojCombo =
       "Выбор mmproj-файла. Локальные (в папке модели) — в приоритете;\n" +
       "варианты из дерева моделей помечены «(в дереве)».\n" +
-      "Дока: " + BenchDefaults.MtmdReadmeUrl;
+      "Дока: " + AppDefaults.MtmdReadmeUrl;
 
     public const string SamplingEnabled =
       "Общий выключатель: передавать ли sampling-параметры в команду llama-server.\n" +

@@ -3,7 +3,7 @@ namespace LlmScanHelper.Models
   /// <summary>
   /// Константы по умолчанию (перенесены из LINQPad-версии 1:1, где возможно).
   /// </summary>
-  public static class BenchDefaults
+  public static class AppDefaults
   {
     public const string ModelsRoot = @"W:\LLStudio\Models";
     public const string DefaultAlias = "";

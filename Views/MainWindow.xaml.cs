@@ -21,7 +21,7 @@ namespace LlmScanHelper.Views
         }
         catch (Exception ex)
         {
-          MessageBox.Show("Ошибка инициализации: " + ex.Message, "LLStudio Bench",
+          MessageBox.Show("Ошибка инициализации: " + ex.Message, "LLM Scan Helper",
             MessageBoxButton.OK, MessageBoxImage.Warning);
         }
       };

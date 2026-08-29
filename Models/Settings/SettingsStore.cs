@@ -8,11 +8,11 @@ namespace LlmScanHelper.Models.Settings
   /// <summary>Глобальные (железо/серверные) параметры.</summary>
   public sealed class GlobalParams
   {
-    public string Host { get; set; } = BenchDefaults.DefaultHost;
-    public int Port { get; set; } = BenchDefaults.DefaultPort;
-    public string Devices { get; set; } = BenchDefaults.DefaultDevices;
-    public double ReserveV100GiB { get; set; } = BenchDefaults.SafeReserveV100GiB;
-    public double ReserveRtxGiB { get; set; } = BenchDefaults.SafeReserveRtxGiB;
+    public string Host { get; set; } = AppDefaults.DefaultHost;
+    public int Port { get; set; } = AppDefaults.DefaultPort;
+    public string Devices { get; set; } = AppDefaults.DefaultDevices;
+    public double ReserveV100GiB { get; set; } = AppDefaults.SafeReserveV100GiB;
+    public double ReserveRtxGiB { get; set; } = AppDefaults.SafeReserveRtxGiB;
 
     public int ModeIndex { get; set; } = 0;            // 0 = AUTO, 1 = MANUAL
     public string SplitMode { get; set; } = "layer";
@@ -20,29 +20,29 @@ namespace LlmScanHelper.Models.Settings
     public int Split0 { get; set; } = 3;
     public int Split1 { get; set; } = 1;
 
-    public int Batch { get; set; } = BenchDefaults.DefaultBatch;
-    public int UBatch { get; set; } = BenchDefaults.DefaultUBatch;
-    public int Slots { get; set; } = BenchDefaults.DefaultSlots;
+    public int Batch { get; set; } = AppDefaults.DefaultBatch;
+    public int UBatch { get; set; } = AppDefaults.DefaultUBatch;
+    public int Slots { get; set; } = AppDefaults.DefaultSlots;
     public int Threads { get; set; } = 0;
     public int ThreadsBatch { get; set; } = 0;
 
     public bool PromptCache { get; set; } = true;
-    public int CacheReuse { get; set; } = BenchDefaults.DefaultCacheReuse;
-    public int SsePing { get; set; } = BenchDefaults.DefaultSsePing;
-    public int Timeout { get; set; } = BenchDefaults.DefaultTimeout;
+    public int CacheReuse { get; set; } = AppDefaults.DefaultCacheReuse;
+    public int SsePing { get; set; } = AppDefaults.DefaultSsePing;
+    public int Timeout { get; set; } = AppDefaults.DefaultTimeout;
     public bool Perf { get; set; } = true;
 
     // Sampling (параметры разработчика)
-    public bool SamplingEnabled { get; set; } = BenchDefaults.DefaultSamplingEnabled;
-    public double Temp { get; set; } = BenchDefaults.DefaultTemp;
-    public int TopK { get; set; } = BenchDefaults.DefaultTopK;
-    public double TopP { get; set; } = BenchDefaults.DefaultTopP;
-    public double MinP { get; set; } = BenchDefaults.DefaultMinP;
-    public double RepeatPenalty { get; set; } = BenchDefaults.DefaultRepeatPenalty;
-    public int RepeatLastN { get; set; } = BenchDefaults.DefaultRepeatLastN;
-    public double PresencePenalty { get; set; } = BenchDefaults.DefaultPresencePenalty;
-    public double FrequencyPenalty { get; set; } = BenchDefaults.DefaultFrequencyPenalty;
-    public int Seed { get; set; } = BenchDefaults.DefaultSeed;
+    public bool SamplingEnabled { get; set; } = AppDefaults.DefaultSamplingEnabled;
+    public double Temp { get; set; } = AppDefaults.DefaultTemp;
+    public int TopK { get; set; } = AppDefaults.DefaultTopK;
+    public double TopP { get; set; } = AppDefaults.DefaultTopP;
+    public double MinP { get; set; } = AppDefaults.DefaultMinP;
+    public double RepeatPenalty { get; set; } = AppDefaults.DefaultRepeatPenalty;
+    public int RepeatLastN { get; set; } = AppDefaults.DefaultRepeatLastN;
+    public double PresencePenalty { get; set; } = AppDefaults.DefaultPresencePenalty;
+    public double FrequencyPenalty { get; set; } = AppDefaults.DefaultFrequencyPenalty;
+    public int Seed { get; set; } = AppDefaults.DefaultSeed;
   }
 
   /// <summary>Переопределения для конкретной модели (ключ — полный путь файла).</summary>
@@ -76,7 +76,7 @@ namespace LlmScanHelper.Models.Settings
   public sealed class AppSettings
   {
     public string SettingsVersion { get; set; } = "4.0";
-    public string ModelsRoot { get; set; } = BenchDefaults.ModelsRoot;
+    public string ModelsRoot { get; set; } = AppDefaults.ModelsRoot;
     public string LastModelPath { get; set; } = "";
     public int SelectedTabIndex { get; set; } = 0;    // 0 = Панель, 1 = Памятка
 

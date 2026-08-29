@@ -179,7 +179,7 @@
                                Style="{StaticResource Lbl}"
                                Margin="14,0,6,0" />
                     <mah:NumericUpDown Width="90"
-                                    Minimum="{x:Static m:BenchDefaults.MinDesktopReserveGiB}"
+                                    Minimum="{x:Static m:AppDefaults.MinDesktopReserveGiB}"
                                     Maximum="8"
                                     Interval="0.25"
                                     StringFormat="0.00"

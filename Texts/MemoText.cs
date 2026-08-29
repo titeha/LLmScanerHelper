@@ -10,7 +10,7 @@ namespace LlmScanHelper.Texts
     public const string All =
 """
 =====================================================================
-LLStudio Bench — сканер GGUF + генератор параметров llama-server
+LLM Scan Helper — сканер GGUF + генератор параметров llama-server
           для V100 + desktop RTX, безопасного AUTO --fit,
           MTP и ручного лабораторного режима
 Запуск: LlmScanHelper.exe (WPF / .NET 9). Параметры сохраняются в

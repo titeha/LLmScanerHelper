@@ -42,7 +42,7 @@ namespace LlmScanHelper.ViewModels
       var g = _gguf;
       if (g == null) return "(сначала выбери модель)";
 
-      string host = string.IsNullOrWhiteSpace(Host) ? BenchDefaults.DefaultHost : Host.Trim();
+      string host = string.IsNullOrWhiteSpace(Host) ? AppDefaults.DefaultHost : Host.Trim();
       string devices = DevicesText.Trim();
 
       var sb = new StringBuilder();

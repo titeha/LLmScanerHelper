@@ -36,10 +36,10 @@ namespace LlmScanHelper.ViewModels
       BuildCommandCommand = new RelayCommand(BuildOutputs);
       CopyCommandCommand = new RelayCommand(CopyToClipboard);
 
-      PresetV100OnlyCommand = new RelayCommand(() => ApplyBaseAuto(BenchDefaults.SafeReserveRtxGiB, v100Only: true));
-      PresetSafeCommand = new RelayCommand(() => ApplyBaseAuto(BenchDefaults.SafeReserveRtxGiB, v100Only: false));
-      PresetBalancedCommand = new RelayCommand(() => ApplyBaseAuto(BenchDefaults.BalancedReserveRtxGiB, v100Only: false));
-      PresetAggressiveCommand = new RelayCommand(() => ApplyBaseAuto(BenchDefaults.AggressiveReserveRtxGiB, v100Only: false));
+      PresetV100OnlyCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, v100Only: true));
+      PresetSafeCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, v100Only: false));
+      PresetBalancedCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.BalancedReserveRtxGiB, v100Only: false));
+      PresetAggressiveCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.AggressiveReserveRtxGiB, v100Only: false));
       PresetQ8Command = new RelayCommand(ApplyPresetQ8);
       PresetV100Command = new RelayCommand(ApplyPresetV100);
     }
@@ -53,7 +53,7 @@ namespace LlmScanHelper.ViewModels
 
     // ==================== Модели / каталог ====================
 
-    private string _modelsRoot = BenchDefaults.ModelsRoot;
+    private string _modelsRoot = AppDefaults.ModelsRoot;
     public string ModelsRoot
     {
       get => _modelsRoot;
@@ -124,7 +124,7 @@ namespace LlmScanHelper.ViewModels
     public int ContextTick => Math.Max(4096, MaxContext / 30);
     public int ContextLarge => Math.Max(4096, MaxContext / 10);
 
-    private int _context = BenchDefaults.DefaultContext;
+    private int _context = AppDefaults.DefaultContext;
     public int Context
     {
       get => _context;
@@ -164,7 +164,7 @@ namespace LlmScanHelper.ViewModels
     /// <summary>MANUAL-режим — активны -ngl/--tensor-split/split-mode.</summary>
     public bool ManualModeActive => ModeIndex != 0;
 
-    private string _devicesText = BenchDefaults.DefaultDevices;
+    private string _devicesText = AppDefaults.DefaultDevices;
     public string DevicesText
     {
       get => _devicesText;
@@ -174,20 +174,20 @@ namespace LlmScanHelper.ViewModels
     private string _splitMode = "layer";
     public string SplitMode { get => _splitMode; set { if (Set(ref _splitMode, value)) SaveSoon(); } }
 
-    private double _reserveV100GiB = BenchDefaults.SafeReserveV100GiB;
+    private double _reserveV100GiB = AppDefaults.SafeReserveV100GiB;
     public double ReserveV100GiB
     {
       get => _reserveV100GiB;
       set { if (Set(ref _reserveV100GiB, value)) { UpdateFitTargets(); SaveSoon(); } }
     }
 
-    private double _reserveRtxGiB = BenchDefaults.SafeReserveRtxGiB;
+    private double _reserveRtxGiB = AppDefaults.SafeReserveRtxGiB;
     public double ReserveRtxGiB
     {
       get => _reserveRtxGiB;
       set
       {
-        value = Math.Max(value, BenchDefaults.MinDesktopReserveGiB); // ниже 2 GiB UI не предлагает
+        value = Math.Max(value, AppDefaults.MinDesktopReserveGiB); // ниже 2 GiB UI не предлагает
         if (Set(ref _reserveRtxGiB, value))
         { UpdateFitTargets(); SaveSoon(); }
       }
@@ -223,13 +223,13 @@ namespace LlmScanHelper.ViewModels
 
     // ==================== Производительность / агент ====================
 
-    private int _batch = BenchDefaults.DefaultBatch;
+    private int _batch = AppDefaults.DefaultBatch;
     public int Batch { get => _batch; set { if (Set(ref _batch, value)) SaveSoon(); } }
 
-    private int _ubatch = BenchDefaults.DefaultUBatch;
+    private int _ubatch = AppDefaults.DefaultUBatch;
     public int UBatch { get => _ubatch; set { if (Set(ref _ubatch, value)) SaveSoon(); } }
 
-    private int _slots = BenchDefaults.DefaultSlots;
+    private int _slots = AppDefaults.DefaultSlots;
     public int Slots { get => _slots; set { if (Set(ref _slots, value)) SaveSoon(); } }
 
     private int _threads = 0;
@@ -241,13 +241,13 @@ namespace LlmScanHelper.ViewModels
     private bool _promptCache = true;
     public bool PromptCache { get => _promptCache; set { if (Set(ref _promptCache, value)) SaveSoon(); } }
 
-    private int _cacheReuse = BenchDefaults.DefaultCacheReuse;
+    private int _cacheReuse = AppDefaults.DefaultCacheReuse;
     public int CacheReuse { get => _cacheReuse; set { if (Set(ref _cacheReuse, value)) SaveSoon(); } }
 
-    private int _ssePing = BenchDefaults.DefaultSsePing;
+    private int _ssePing = AppDefaults.DefaultSsePing;
     public int SsePing { get => _ssePing; set { if (Set(ref _ssePing, value)) SaveSoon(); } }
 
-    private int _timeout = BenchDefaults.DefaultTimeout;
+    private int _timeout = AppDefaults.DefaultTimeout;
     public int Timeout { get => _timeout; set { if (Set(ref _timeout, value)) SaveSoon(); } }
 
     private bool _perf = true;
@@ -255,10 +255,10 @@ namespace LlmScanHelper.ViewModels
 
     // ==================== MTP / reasoning / server ====================
 
-    private string _host = BenchDefaults.DefaultHost;
+    private string _host = AppDefaults.DefaultHost;
     public string Host { get => _host; set { if (Set(ref _host, value)) SaveSoon(); } }
 
-    private int _port = BenchDefaults.DefaultPort;
+    private int _port = AppDefaults.DefaultPort;
     public int Port { get => _port; set { if (Set(ref _port, value)) SaveSoon(); } }
 
     private bool _mtpAvailable;
@@ -401,34 +401,34 @@ namespace LlmScanHelper.ViewModels
 
     // ==================== Sampling (параметры разработчика) ====================
 
-    private bool _samplingEnabled = BenchDefaults.DefaultSamplingEnabled;
+    private bool _samplingEnabled = AppDefaults.DefaultSamplingEnabled;
     public bool SamplingEnabled { get => _samplingEnabled; set { if (Set(ref _samplingEnabled, value)) SaveSoon(); } }
 
-    private double _temp = BenchDefaults.DefaultTemp;
+    private double _temp = AppDefaults.DefaultTemp;
     public double Temp { get => _temp; set { if (Set(ref _temp, value)) SaveSoon(); } }
 
-    private int _topK = BenchDefaults.DefaultTopK;
+    private int _topK = AppDefaults.DefaultTopK;
     public int TopK { get => _topK; set { if (Set(ref _topK, value)) SaveSoon(); } }
 
-    private double _topP = BenchDefaults.DefaultTopP;
+    private double _topP = AppDefaults.DefaultTopP;
     public double TopP { get => _topP; set { if (Set(ref _topP, value)) SaveSoon(); } }
 
-    private double _minP = BenchDefaults.DefaultMinP;
+    private double _minP = AppDefaults.DefaultMinP;
     public double MinP { get => _minP; set { if (Set(ref _minP, value)) SaveSoon(); } }
 
-    private double _repeatPenalty = BenchDefaults.DefaultRepeatPenalty;
+    private double _repeatPenalty = AppDefaults.DefaultRepeatPenalty;
     public double RepeatPenalty { get => _repeatPenalty; set { if (Set(ref _repeatPenalty, value)) SaveSoon(); } }
 
-    private int _repeatLastN = BenchDefaults.DefaultRepeatLastN;
+    private int _repeatLastN = AppDefaults.DefaultRepeatLastN;
     public int RepeatLastN { get => _repeatLastN; set { if (Set(ref _repeatLastN, value)) SaveSoon(); } }
 
-    private double _presencePenalty = BenchDefaults.DefaultPresencePenalty;
+    private double _presencePenalty = AppDefaults.DefaultPresencePenalty;
     public double PresencePenalty { get => _presencePenalty; set { if (Set(ref _presencePenalty, value)) SaveSoon(); } }
 
-    private double _frequencyPenalty = BenchDefaults.DefaultFrequencyPenalty;
+    private double _frequencyPenalty = AppDefaults.DefaultFrequencyPenalty;
     public double FrequencyPenalty { get => _frequencyPenalty; set { if (Set(ref _frequencyPenalty, value)) SaveSoon(); } }
 
-    private int _seed = BenchDefaults.DefaultSeed;
+    private int _seed = AppDefaults.DefaultSeed;
     public int Seed { get => _seed; set { if (Set(ref _seed, value)) SaveSoon(); } }
 
     // ==================== Выходы ====================
@@ -543,7 +543,7 @@ namespace LlmScanHelper.ViewModels
 
         Context = ms.Context > 0
           ? Math.Clamp(ms.Context, 1024, MaxContext)
-          : Math.Min(BenchDefaults.DefaultContext, MaxContext);
+          : Math.Min(AppDefaults.DefaultContext, MaxContext);
 
         if (KvOptions.Contains(ms.KvK))
           KvK = ms.KvK;
@@ -727,10 +727,10 @@ namespace LlmScanHelper.ViewModels
         if (info.IsV100())
           return ReserveV100GiB;
         if (info.IsDesktopRtx())
-          return Math.Max(ReserveRtxGiB, BenchDefaults.MinDesktopReserveGiB);
+          return Math.Max(ReserveRtxGiB, AppDefaults.MinDesktopReserveGiB);
       }
       // Fallback: первая карта — compute V100, вторая — desktop RTX
-      return position == 0 ? ReserveV100GiB : Math.Max(ReserveRtxGiB, BenchDefaults.MinDesktopReserveGiB);
+      return position == 0 ? ReserveV100GiB : Math.Max(ReserveRtxGiB, AppDefaults.MinDesktopReserveGiB);
     }
 
     private static int GiBToMiB(double gib) => (int)Math.Round(gib * 1024.0, MidpointRounding.AwayFromZero);
@@ -776,8 +776,8 @@ namespace LlmScanHelper.ViewModels
         Flash = "auto";
         ModeIndex = 0;
         DevicesText = v100Only ? FindV100Device() : CombinedDevices();
-        ReserveV100GiB = BenchDefaults.SafeReserveV100GiB;
-        ReserveRtxGiB = Math.Max(rtxReserveGiB, BenchDefaults.MinDesktopReserveGiB);
+        ReserveV100GiB = AppDefaults.SafeReserveV100GiB;
+        ReserveRtxGiB = Math.Max(rtxReserveGiB, AppDefaults.MinDesktopReserveGiB);
         Batch = 2048;
         UBatch = 512;
         Slots = 1;
@@ -805,7 +805,7 @@ namespace LlmScanHelper.ViewModels
 
     private void ApplyPresetQ8()
     {
-      ApplyBaseAuto(BenchDefaults.SafeReserveRtxGiB, v100Only: false);
+      ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, v100Only: false);
       _suppressSave = true;
       try
       {
@@ -821,7 +821,7 @@ namespace LlmScanHelper.ViewModels
 
     private void ApplyPresetV100()
     {
-      ApplyBaseAuto(BenchDefaults.SafeReserveRtxGiB, v100Only: false);
+      ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, v100Only: false);
       _suppressSave = true;
       try
       {
@@ -835,7 +835,7 @@ namespace LlmScanHelper.ViewModels
 
     // ==================== Алиас ====================
 
-    private string _aliasText = BenchDefaults.DefaultAlias;
+    private string _aliasText = AppDefaults.DefaultAlias;
     public string AliasText
     {
       get => _aliasText;
@@ -947,7 +947,7 @@ namespace LlmScanHelper.ViewModels
         Seed = gp.Seed;
 
         ModelsRoot = string.IsNullOrWhiteSpace(_store.Settings.ModelsRoot)
-          ? BenchDefaults.ModelsRoot
+          ? AppDefaults.ModelsRoot
           : _store.Settings.ModelsRoot;
         SelectedTabIndex = Math.Clamp(_store.Settings.SelectedTabIndex, 0, 1);
       }

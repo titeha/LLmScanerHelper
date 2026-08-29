@@ -60,9 +60,9 @@ namespace LlmScanHelper.Models
         ulong tensorCount = r.ReadUInt64();
         ulong kvCount = r.ReadUInt64();
 
-        if (tensorCount > BenchDefaults.MaxTensorCount)
+        if (tensorCount > AppDefaults.MaxTensorCount)
           throw new Exception($"Слишком много тензоров: {tensorCount}");
-        if (kvCount > BenchDefaults.MaxKvCount)
+        if (kvCount > AppDefaults.MaxKvCount)
           throw new Exception($"Слишком много KV-пар: {kvCount}");
 
         var meta = new Dictionary<string, object>();
@@ -248,8 +248,8 @@ namespace LlmScanHelper.Models
     private static string RStr(BinaryReader r)
     {
       ulong len = r.ReadUInt64();
-      if (len > BenchDefaults.MaxStringLen)
-        throw new Exception($"Строка слишком длинная: {len} байт (макс. {BenchDefaults.MaxStringLen})");
+      if (len > AppDefaults.MaxStringLen)
+        throw new Exception($"Строка слишком длинная: {len} байт (макс. {AppDefaults.MaxStringLen})");
       if (len > int.MaxValue)
         throw new Exception($"Длина строки превышает int.MaxValue: {len}");
       return Encoding.UTF8.GetString(r.ReadBytes((int)len));
@@ -271,7 +271,7 @@ namespace LlmScanHelper.Models
         case 9:
           uint et = r.ReadUInt32();
           ulong n = r.ReadUInt64();
-          if (n > BenchDefaults.MaxArrayLen)
+          if (n > AppDefaults.MaxArrayLen)
             throw new Exception($"Массив слишком большой: {n}");
           var arr = new object[(int)n];
           for (ulong i = 0; i < n; i++) arr[(int)i] = RVal(r, et);
