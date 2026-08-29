@@ -152,7 +152,7 @@ TOOL-CALLS / АГЕНТНАЯ РАБОТА (--jinja):
 КАРТА ДОСТРОЙКИ (куда лезть, чтобы добавить своё):
   новый флаг llama-server   -> ViewModels/MainViewModel.Output.cs, BuildCommand()
   новый параметр модели     -> Models/GgufInfo.cs, чтение meta
-  новый контрол             -> Views/MainWindow.xaml (+ Controls/NumberBox.cs)
+  новый контрол             -> Views/MainWindow.xaml (числа: mah:NumericUpDown)
   новые предупреждения      -> ViewModels/MainViewModel.Output.cs, BuildWarnings()
   подсказки (tooltip)       -> Texts/ToolTips.cs
   сохранение параметров     -> Models/Settings/SettingsStore.cs
