@@ -10,10 +10,6 @@ namespace LlmScanHelper.Texts
   {
     private const string ServerDoc = "Дока: " + AppDefaults.ServerReadmeUrl;
 
-    public const string ModelsRoot =
-      "Корневая папка, в которой рекурсивно ищутся *.gguf (кроме mmproj*).\n" +
-      "Папки с unsloth/lmstudio/community/mradermacher/ornith показываются как издатель.";
-
     public const string ModelCombo =
       "Выбор модели. При смене модели подтягивается её сохранённый профиль из settings.json\n" +
       "(контекст, KV, MTP, reasoning, mmproj, алиас).";
@@ -231,5 +227,20 @@ namespace LlmScanHelper.Texts
     public const string FitTargets =
       "Как будет выглядеть --fit-target в команде: свободная VRAM минус резервы,\n" +
       "в порядке --device. MiB считаются из GiB (1024^3).";
+
+    public const string CurrentCatalog =
+      "Активный каталог моделей. Здесь ищутся *.gguf при сканировании и загрузке.";
+
+    public const string CatalogCombo =
+      "Список корневых каталогов с моделями. Каталог добавляется, удаляется или редактируется кнопками ниже.";
+
+    public const string AddCatalog =
+      "Добавить новый корневой каталог с моделями (выбор папки).";
+
+    public const string RemoveCatalog =
+      "Удалить выбранный каталог. Последний каталог удалить нельзя.";
+
+    public const string EditCatalog =
+      "Изменить путь выбранного каталога (выбор папки).";
   }
 }

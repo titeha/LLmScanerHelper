@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>LlmScanHelper</RootNamespace>
     <AssemblyName>LLMScanHelper</AssemblyName>
-    <Version>4.0.0</Version>
+    <Version>5.0.0</Version>
     <Description>LLM Scan Helper — сканер GGUF + генератор параметров llama-server (WPF/MVVM)</Description>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 using LlmScanHelper.Models;
@@ -29,6 +30,7 @@ namespace LlmScanHelper.ViewModels
     {
       _store.Load();
       ApplyGlobalFromStore();
+      ApplyCatalogsFromStore();
 
       ScanCommand = new AsyncRelayCommand(ScanAsync);
       RefreshGpusCommand = new AsyncRelayCommand(RefreshGpusAsync);
@@ -41,6 +43,10 @@ namespace LlmScanHelper.ViewModels
       PresetAggressiveCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.AggressiveReserveRtxGiB, v100Only: false));
       PresetQ8Command = new RelayCommand(ApplyPresetQ8);
       PresetV100Command = new RelayCommand(ApplyPresetV100);
+
+      AddCatalogCommand = new RelayCommand(AddCatalog);
+      RemoveCatalogCommand = new RelayCommand(RemoveCatalog);
+      EditCatalogCommand = new RelayCommand(EditCatalog);
     }
 
     /// <summary>Вызывается из MainWindow после загрузки окна.</summary>
@@ -50,14 +56,20 @@ namespace LlmScanHelper.ViewModels
       // GPU НЕ опрашиваем автоматически (как в LINQPad-версии) — кнопка «Обновить GPU».
     }
 
-    // ==================== Модели / каталог ====================
+    // ==================== Модели / каталоги ====================
 
-    private string _modelsRoot = AppDefaults.ModelsRoot;
-    public string ModelsRoot
+    // Список корневых каталогов с моделями (ранее — одна строка ModelsRoot).
+    public ObservableCollection<string> Catalogs { get; } = new();
+    private string _selectedCatalog = AppDefaults.ModelsRoot;
+    public string SelectedCatalog
     {
-      get => _modelsRoot;
-      set { if (Set(ref _modelsRoot, value)) SaveSoon(); }
+      get => _selectedCatalog;
+      set { if (Set(ref _selectedCatalog, value)) { OnPropertyChanged(nameof(SelectedCatalogText)); SaveSoon(); } }
     }
+
+    // Read-only текст активного каталога для индикатора на панели.
+    public string SelectedCatalogText =>
+      string.IsNullOrEmpty(SelectedCatalog) ? "Каталог не выбран" : SelectedCatalog;
 
     public ObservableCollection<ModelEntry> Models { get; } = new();
 
@@ -448,23 +460,26 @@ namespace LlmScanHelper.ViewModels
 
     // ==================== Команды ====================
 
-    public System.Windows.Input.ICommand ScanCommand { get; }
-    public System.Windows.Input.ICommand RefreshGpusCommand { get; }
-    public System.Windows.Input.ICommand BuildCommandCommand { get; }
-    public System.Windows.Input.ICommand CopyCommandCommand { get; }
-    public System.Windows.Input.ICommand PresetV100OnlyCommand { get; }
-    public System.Windows.Input.ICommand PresetSafeCommand { get; }
-    public System.Windows.Input.ICommand PresetBalancedCommand { get; }
-    public System.Windows.Input.ICommand PresetAggressiveCommand { get; }
-    public System.Windows.Input.ICommand PresetQ8Command { get; }
-    public System.Windows.Input.ICommand PresetV100Command { get; }
+    public ICommand ScanCommand { get; }
+    public ICommand RefreshGpusCommand { get; }
+    public ICommand BuildCommandCommand { get; }
+    public ICommand CopyCommandCommand { get; }
+    public ICommand PresetV100OnlyCommand { get; }
+    public ICommand PresetSafeCommand { get; }
+    public ICommand PresetBalancedCommand { get; }
+    public ICommand PresetAggressiveCommand { get; }
+    public ICommand PresetQ8Command { get; }
+    public ICommand PresetV100Command { get; }
+    public ICommand AddCatalogCommand { get; }
+    public ICommand RemoveCatalogCommand { get; }
+    public ICommand EditCatalogCommand { get; }
 
     // ==================== Сканирование ====================
 
     private async Task ScanAsync()
     {
       StatusText = "Сканирование моделей...";
-      var res = await Task.Run(() => GgufScannerService.Scan(ModelsRoot));
+      var res = await Task.Run(() => GgufScannerService.Scan(SelectedCatalog));
 
       if (res.Error != null)
       {
@@ -478,14 +493,12 @@ namespace LlmScanHelper.ViewModels
 
       if (Models.Count == 0)
       {
-        StatusText = "GGUF не найдены в " + ModelsRoot;
+        StatusText = "GGUF не найдены в " + SelectedCatalog;
         return;
       }
 
-      var target = Models.FirstOrDefault(x =>
-        x.FullPath.Equals(_store.Settings.LastModelPath, StringComparison.OrdinalIgnoreCase)) ?? Models[0];
-
-      SelectedModel = target; // триггерит LoadModelAsync
+      SelectedModel = Models.FirstOrDefault(x =>
+        x.FullPath.Equals(_store.Settings.LastModelPath, StringComparison.OrdinalIgnoreCase)) ?? Models[0]; // триггерит LoadModelAsync
     }
 
     // ==================== Загрузка модели ====================
@@ -878,7 +891,8 @@ namespace LlmScanHelper.ViewModels
     public void SaveNow()
     {
       var s = _store.Settings;
-      s.ModelsRoot = ModelsRoot;
+      s.Catalogs = new List<string>(Catalogs);
+      s.SelectedCatalogIndex = Math.Max(0, Catalogs.IndexOf(SelectedCatalog));
       s.LastModelPath = _currentPath ?? "";
       s.SelectedTabIndex = SelectedTabIndex;
       s.Global = SnapshotGlobal();
@@ -931,12 +945,79 @@ namespace LlmScanHelper.ViewModels
         FrequencyPenalty = Math.Clamp(gp.FrequencyPenalty, -2, 2);
         Seed = gp.Seed;
 
-        ModelsRoot = string.IsNullOrWhiteSpace(_store.Settings.ModelsRoot)
-          ? AppDefaults.ModelsRoot
-          : _store.Settings.ModelsRoot;
-        SelectedTabIndex = Math.Clamp(_store.Settings.SelectedTabIndex, 0, 1);
+        SelectedTabIndex = Math.Clamp(_store.Settings.SelectedTabIndex, 0, 2);
       }
       finally { _suppressSave = false; }
+    }
+
+    // ==================== Каталоги ====================
+
+    private void ApplyCatalogsFromStore()
+    {
+      _suppressSave = true;
+      try
+      {
+        Catalogs.Clear();
+        foreach (var c in _store.Settings.Catalogs)
+          Catalogs.Add(c);
+        if (Catalogs.Count == 0)
+        {
+          Catalogs.Add(AppDefaults.ModelsRoot);
+        }
+        SelectedCatalog = Catalogs.Count > 0
+          ? Catalogs[Math.Clamp(_store.Settings.SelectedCatalogIndex, 0, Catalogs.Count - 1)]
+          : AppDefaults.ModelsRoot;
+      }
+      finally { _suppressSave = false; }
+    }
+
+    private string? PromptForCatalogPath()
+    {
+      var dlg = new Microsoft.Win32.OpenFolderDialog
+      {
+        Title = "Выберите папку с моделями"
+      };
+      if (dlg.ShowDialog() == true)
+        return dlg.FolderName;
+      return null;
+    }
+
+    private void AddCatalog()
+    {
+      var path = PromptForCatalogPath();
+      if (string.IsNullOrEmpty(path)) return;
+      if (!Catalogs.Contains(path, StringComparer.OrdinalIgnoreCase))
+      {
+        Catalogs.Add(path);
+        SelectedCatalog = path;
+        SaveSoon();
+      }
+    }
+
+    private void RemoveCatalog()
+    {
+      if (Catalogs.Count <= 1) return;
+      var idx = Catalogs.IndexOf(SelectedCatalog);
+      if (idx < 0) return;
+      Catalogs.RemoveAt(idx);
+      SelectedCatalog = Catalogs[Math.Clamp(idx, 0, Catalogs.Count - 1)];
+      SaveSoon();
+    }
+
+    private void EditCatalog()
+    {
+      var path = PromptForCatalogPath();
+      if (string.IsNullOrEmpty(path)) return;
+      if (!Catalogs.Contains(path, StringComparer.OrdinalIgnoreCase))
+      {
+        var idx = Catalogs.IndexOf(SelectedCatalog);
+        if (idx >= 0)
+        {
+          Catalogs[idx] = path;
+          SelectedCatalog = path;
+          SaveSoon();
+        }
+      }
     }
 
     private GlobalParams SnapshotGlobal() => new()

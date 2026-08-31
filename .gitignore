@@ -46,3 +46,5 @@ Thumbs.db
 # Project-specific
 settings.json
 settings.json.bad
+
+.fake

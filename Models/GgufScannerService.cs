@@ -10,6 +10,7 @@ namespace LlmScanHelper.Models
     public sealed class ScanResult
     {
       public List<ModelEntry> Models { get; init; } = new();
+
       public string? Error { get; init; }
     }
 
@@ -83,9 +84,7 @@ namespace LlmScanHelper.Models
           d.Contains("community", StringComparison.OrdinalIgnoreCase) ||
           d.Contains("mradermacher", StringComparison.OrdinalIgnoreCase) ||
           d.Contains("ornith", StringComparison.OrdinalIgnoreCase))
-        {
           return d;
-        }
       }
       return "";
     }

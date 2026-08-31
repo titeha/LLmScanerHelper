@@ -76,9 +76,17 @@ namespace LlmScanHelper.Models.Settings
   public sealed class AppSettings
   {
     public string SettingsVersion { get; set; } = "4.0";
-    public string ModelsRoot { get; set; } = AppDefaults.ModelsRoot;
+    // Корневые каталоги с моделями (ранее одна строка ModelsRoot).
+    // Пустой по умолчанию; при старте без settings.json вьюмодель подставит дефолт.
+    public List<string> Catalogs { get; set; } = new();
+    public int SelectedCatalogIndex { get; set; } = 0;
     public string LastModelPath { get; set; } = "";
-    public int SelectedTabIndex { get; set; } = 0;    // 0 = Панель, 1 = Памятка
+    public int SelectedTabIndex { get; set; } = 0;    // 0 = Панель, 1 = Памятка, 2 = Настройки
+
+    // Мостик для миграции из старых файлов (до нескольких каталогов), где корень
+    // моделей хранился как строка ModelsRoot. После миграции обнуляется.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ModelsRoot { get; set; }
 
     public GlobalParams Global { get; set; } = new();
 
@@ -123,6 +131,19 @@ namespace LlmScanHelper.Models.Settings
           // словарь без компаратора при десериализации — восстановим
           Settings.PerModel = new Dictionary<string, ModelSettings>(
             Settings.PerModel, StringComparer.OrdinalIgnoreCase);
+
+          // Миграция: старые файлы хранили ModelsRoot как строку. Новый список
+          // каталогов пуст при десериализации старого файла, подтягиваем ModelsRoot
+          // как единственный каталог, а мостиковое поле обнуляем.
+          if (Settings.Catalogs.Count == 0)
+          {
+            Settings.Catalogs = new List<string>
+            {
+              string.IsNullOrEmpty(Settings.ModelsRoot) ? AppDefaults.ModelsRoot : Settings.ModelsRoot
+            };
+            Settings.SelectedCatalogIndex = 0;
+            Settings.ModelsRoot = null;
+          }
         }
       }
       catch (Exception)
