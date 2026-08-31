@@ -361,7 +361,7 @@
                     <TextBlock Text="p-min:"
                                Style="{StaticResource Lbl}"
                                Margin="8,0,6,0" />
-                    <mah:NumericUpDown Width="70"
+                    <mah:NumericUpDown Width="90"
                                     Minimum="0"
                                     Maximum="1"
                                     Interval="0.05"
