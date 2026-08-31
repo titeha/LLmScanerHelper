@@ -48,3 +48,7 @@ settings.json
 settings.json.bad
 
 .fake
+
+# Агентские рабочие папки
+.qwen/
+.pi/
