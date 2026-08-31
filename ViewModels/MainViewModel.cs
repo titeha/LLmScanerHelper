@@ -38,10 +38,11 @@ namespace LlmScanHelper.ViewModels
       BuildCommandCommand = new RelayCommand(BuildOutputs);
       CopyCommandCommand = new RelayCommand(CopyToClipboard);
 
-      PresetV100OnlyCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, v100Only: true));
-      PresetSafeCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, v100Only: false));
-      PresetBalancedCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.BalancedReserveRtxGiB, v100Only: false));
-      PresetAggressiveCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.AggressiveReserveRtxGiB, v100Only: false));
+      PresetV100OnlyCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, PresetDevices.V100Only));
+      PresetRtxOnlyCommand = new RelayCommand(ApplyPresetRtxOnly);
+      PresetSafeCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, PresetDevices.Combined));
+      PresetBalancedCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.BalancedReserveRtxGiB, PresetDevices.Combined));
+      PresetAggressiveCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.AggressiveReserveRtxGiB, PresetDevices.Combined));
       PresetQ8Command = new RelayCommand(ApplyPresetQ8);
       PresetV100Command = new RelayCommand(ApplyPresetV100);
 
@@ -293,6 +294,7 @@ namespace LlmScanHelper.ViewModels
           OnPropertyChanged(nameof(MtpLockReason));
           OnPropertyChanged(nameof(MtpToolTip));
           OnPropertyChanged(nameof(IsMtpControlsEnabled));
+          OnPropertyChanged(nameof(HasMtpOrReasoning));
         }
       }
     }
@@ -359,7 +361,15 @@ namespace LlmScanHelper.ViewModels
     public string DraftV { get => _draftV; set { if (Set(ref _draftV, value)) SaveSoon(); } }
 
     private bool _reasoningAvailable;
-    public bool ReasoningAvailable { get => _reasoningAvailable; private set => Set(ref _reasoningAvailable, value); }
+    public bool ReasoningAvailable
+    {
+      get => _reasoningAvailable;
+      private set
+      {
+        if (Set(ref _reasoningAvailable, value))
+          OnPropertyChanged(nameof(HasMtpOrReasoning));
+      }
+    }
 
     private bool _reasoningChecked;
     public bool ReasoningChecked { get => _reasoningChecked; set { if (Set(ref _reasoningChecked, value)) SaveSoon(); } }
@@ -400,6 +410,12 @@ namespace LlmScanHelper.ViewModels
 
     private bool _mmprojAvailable;
     public bool MmprojAvailable { get => _mmprojAvailable; private set => Set(ref _mmprojAvailable, value); }
+
+    private bool _jinjaAvailable;
+    public bool JinjaAvailable { get => _jinjaAvailable; private set => Set(ref _jinjaAvailable, value); }
+
+    /// <summary>Ряд с draft KV и reasoning: прячется целиком, если в модели нет ни того ни другого.</summary>
+    public bool HasMtpOrReasoning => MtpAvailable || ReasoningAvailable;
 
     private MmprojEntry? _selectedMmproj;
     public MmprojEntry? SelectedMmproj
@@ -473,6 +489,7 @@ namespace LlmScanHelper.ViewModels
     public ICommand BuildCommandCommand { get; }
     public ICommand CopyCommandCommand { get; }
     public ICommand PresetV100OnlyCommand { get; }
+    public ICommand PresetRtxOnlyCommand { get; }
     public ICommand PresetSafeCommand { get; }
     public ICommand PresetBalancedCommand { get; }
     public ICommand PresetAggressiveCommand { get; }
@@ -527,6 +544,7 @@ namespace LlmScanHelper.ViewModels
         ReasoningAvailable = false;
         ReasoningChecked = false;
         JinjaChecked = false;
+        JinjaAvailable = false;
         MmprojAvailable = false;
         MmprojChecked = false;
         MmprojFiles.Clear();
@@ -604,6 +622,9 @@ namespace LlmScanHelper.ViewModels
         _suppressJinjaEdit = true;
         JinjaChecked = ms.JinjaEdited ? ms.UseJinja : g.ToolSupport == ToolSupportKind.Yes;
         _suppressJinjaEdit = false;
+
+        // Строка --jinja видна, только если в GGUF вообще есть chat-шаблон
+        JinjaAvailable = g.HasChatTemplate;
 
         // Подробный вердикт по инструментам уводим во всплывашку, в строке — только да/нет/?
         InfoTools = g.ToolSupport switch
@@ -802,7 +823,9 @@ namespace LlmScanHelper.ViewModels
 
     // ==================== Пресеты ====================
 
-    private void ApplyBaseAuto(double rtxReserveGiB, bool v100Only)
+    private enum PresetDevices { Combined, V100Only, RtxOnly }
+
+    private void ApplyBaseAuto(double rtxReserveGiB, PresetDevices devices)
     {
       _suppressSave = true;
       try
@@ -812,7 +835,12 @@ namespace LlmScanHelper.ViewModels
         KvV = "q8_0";
         Flash = "auto";
         ModeIndex = 0;
-        DevicesText = v100Only ? FindV100Device() : CombinedDevices();
+        DevicesText = devices switch
+        {
+          PresetDevices.V100Only => FindV100Device(),
+          PresetDevices.RtxOnly => FindDesktopRtxDevice(),
+          _ => CombinedDevices()
+        };
         ReserveV100GiB = AppDefaults.SafeReserveV100GiB;
         ReserveRtxGiB = Math.Max(rtxReserveGiB, AppDefaults.MinDesktopReserveGiB);
         Batch = 2048;
@@ -840,9 +868,11 @@ namespace LlmScanHelper.ViewModels
       SaveSoon();
     }
 
+    private void ApplyPresetRtxOnly() => ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, PresetDevices.RtxOnly);
+
     private void ApplyPresetQ8()
     {
-      ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, v100Only: false);
+      ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, PresetDevices.Combined);
       _suppressSave = true;
       try
       {
@@ -858,7 +888,7 @@ namespace LlmScanHelper.ViewModels
 
     private void ApplyPresetV100()
     {
-      ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, v100Only: false);
+      ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, PresetDevices.Combined);
       _suppressSave = true;
       try
       {

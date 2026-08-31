@@ -55,8 +55,9 @@ namespace LlmScanHelper.ViewModels
         sb.Append(" --alias \"").Append(AliasText.Trim()).Append("\"");
 
       // Родной chat-шаблон GGUF: без него сервер не отдаст модели tools
-      // и не распарсит ответ в OpenAI-совместимые tool_calls (агентная работа)
-      if (JinjaChecked)
+      // и не распарсит ответ в OpenAI-совместимые tool_calls (агентная работа).
+      // Без шаблона в GGUF флаг бессмысленен — даже если галочка осталась в профиле.
+      if (JinjaChecked && g.HasChatTemplate)
         sb.Append(" --jinja");
 
       // Мультимодальность: --mmproj (переключатель + выбранный файл)
