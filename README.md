@@ -33,17 +33,23 @@ dotnet run -c Release
 
 | Файл | Назначение |
 |---|---|
-| `Views/MainWindow.xaml` | весь интерфейс (TabControl: «Панель» + «Памятка») |
-| `ViewModels/MainViewModel.cs` | состояние, сканирование, GPU, пресеты, настройки |
+| `Views/MainWindow.xaml` | весь интерфейс (TabControl: «Панель» + «Памятка» + «Настройки») |
+| `ViewModels/MainViewModel.cs` | ядро: состояние, параметры, команды, сканирование |
+| `ViewModels/MainViewModel.Model.cs` | инфо о модели, загрузка, мультимодальность (mmproj) |
+| `ViewModels/MainViewModel.MtpReasoning.cs` | сервер (хост/порт), MTP, reasoning, jinja |
+| `ViewModels/MainViewModel.Gpu.cs` | GPU layout и опрос устройств |
+| `ViewModels/MainViewModel.Presets.cs` | пресеты |
+| `ViewModels/MainViewModel.Catalogs.cs` | корневые каталоги моделей |
+| `ViewModels/MainViewModel.Persistence.cs` | сохранение/загрузка настроек |
 | `ViewModels/MainViewModel.Output.cs` | сборка команды, предупреждения, оценка слоёв, буфер обмена |
-| `Models/GgufInfo.cs` | парсер GGUF (архитектура, блоки, KV, MTP/nextn, reasoning, Q8-детект) |
+| `Models/GgufInfo.cs` | парсер GGUF (архитектура, блоки, KV, MTP/nextn, reasoning, tools) |
 | `Models/GgufScannerService.cs` | обход дерева моделей, издатель, поиск mmproj |
 | `Models/GpuService.cs` | `llama-server --list-devices` (парсинг CUDA-id и свободной VRAM) |
 | `Models/LayerEstimator.cs` | грубая оценка раскладки блоков (веса+KV) по картам |
 | `Models/Settings/SettingsStore.cs` | JSON-хранилище (portable) |
 | `Texts/MemoText.cs` | текст памятки «ПОЧЕМУ ТАК» |
 | `Texts/ToolTips.cs` | popup-подсказки по всем параметрам (зачем/влияет/дока) |
-| `Controls/NumberBox.cs` | числовой контрол: Enter/LostFocus-коммит, ±с повторением |
+| `Controls/TextBoxHelpers.cs` | attached-поведение: коммит TextBox по Enter |
 
 ## Параметры
 
