@@ -16,6 +16,7 @@
         UseLayoutRounding="True"
         ShowTitleBar="True"
         TitleBarHeight="30"
+        TitleCharacterCasing="Normal"
         WindowTransitionsEnabled="False">
 
   <mah:MetroWindow.Resources>
@@ -25,7 +26,8 @@
   <TabControl SelectedIndex="{Binding SelectedTabIndex}">
 
     <!-- ==================== ВКЛАДКА: ПАНЕЛЬ ==================== -->
-    <TabItem Header="Панель">
+    <TabItem Header="Панель"
+             mah:ControlsHelper.ContentCharacterCasing="Normal">
       <DockPanel>
         <!-- Инструментальная полоса -->
         <StackPanel DockPanel.Dock="Top"
@@ -479,8 +481,6 @@
                              Foreground="DarkGreen"
                              Margin="0,4,0,0"
                              ToolTip="{x:Static t:ToolTips.MmprojEnabled}" />
-                  <TextBlock Text="Поиск: mmproj-файлы ищутся только в папке модели."
-                             Style="{StaticResource HintText}" />
                 </StackPanel>
               </GroupBox>
 
@@ -789,7 +789,8 @@
     </TabItem>
 
     <!-- ==================== ВКЛАДКА: ПАМЯТКА ==================== -->
-    <TabItem Header="Памятка (почему так)">
+    <TabItem Header="Памятка (почему так)"
+             mah:ControlsHelper.ContentCharacterCasing="Normal">
       <TextBox Style="{StaticResource MonoText}"
                Text="{x:Static t:MemoText.All}"
                TextWrapping="NoWrap"
@@ -799,7 +800,8 @@
     </TabItem>
 
     <!-- ==================== ВКЛАДКА: НАСТРОЙКИ ==================== -->
-    <TabItem Header="Настройки">
+    <TabItem Header="Настройки"
+             mah:ControlsHelper.ContentCharacterCasing="Normal">
       <StackPanel Margin="10">
         <TextBlock Text="Каталоги моделей:"
                    Style="{StaticResource Lbl}" />
