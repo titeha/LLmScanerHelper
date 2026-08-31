@@ -5,6 +5,7 @@ using System.Windows.Threading;
 
 using LlmScanHelper.Models;
 using LlmScanHelper.Models.Settings;
+using LlmScanHelper.Texts;
 using MvvmUtilites;
 
 namespace LlmScanHelper.ViewModels
@@ -114,14 +115,23 @@ namespace LlmScanHelper.ViewModels
     private string _infoFileSize = "-";
     public string InfoFileSize { get => _infoFileSize; private set => Set(ref _infoFileSize, value); }
 
-    private string _infoMtpSize = "-";
-    public string InfoMtpSize { get => _infoMtpSize; private set => Set(ref _infoMtpSize, value); }
-
-    private string _infoQuant = "-";
-    public string InfoQuant { get => _infoQuant; private set => Set(ref _infoQuant, value); }
+    private string _infoMtp = "-";
+    public string InfoMtp { get => _infoMtp; private set => Set(ref _infoMtp, value); }
 
     private string _infoTools = "-";
     public string InfoTools { get => _infoTools; private set => Set(ref _infoTools, value); }
+
+    private string _infoToolsFull = "-";
+    public string InfoToolsFull { get => _infoToolsFull; private set => Set(ref _infoToolsFull, value); }
+
+    private string _infoToolsTooltip = "";
+    public string InfoToolsTooltip { get => _infoToolsTooltip; private set => Set(ref _infoToolsTooltip, value); }
+
+    private string _infoMultimodal = "-";
+    public string InfoMultimodal { get => _infoMultimodal; private set => Set(ref _infoMultimodal, value); }
+
+    private string _infoReasoning = "-";
+    public string InfoReasoning { get => _infoReasoning; private set => Set(ref _infoReasoning, value); }
 
     // ==================== Контекст / KV / Attention ====================
 
@@ -308,9 +318,7 @@ namespace LlmScanHelper.ViewModels
     /// <summary>Подсказка, почему MTP недоступен (пустая — доступен).</summary>
     public string MtpLockReason =>
       !MtpAvailable
-        ? (_gguf == null ? "Модель не загружена"
-          : !_gguf.HasMtp ? "В модели нет MTP/nextn-тензоров"
-          : "Издатель заявляет: MTP недоступен для Q8-квантов — переключатель отключён")
+        ? (_gguf == null ? "Модель не загружена" : "В модели нет MTP/nextn-тензоров")
         : "";
 
     /// <summary>Полный tooltip для MTP: документация + причина блокировки, если есть.</summary>
@@ -511,7 +519,9 @@ namespace LlmScanHelper.ViewModels
       if (m == null)
       {
         _currentPath = null;
-        InfoArch = InfoBlocks = InfoMaxCtx = InfoFileSize = InfoMtpSize = InfoQuant = InfoTools = "-";
+        InfoArch = InfoBlocks = InfoMaxCtx = InfoFileSize = InfoMtp = InfoTools =
+          InfoToolsFull = InfoMultimodal = InfoReasoning = "-";
+        InfoToolsTooltip = "";
         MtpAvailable = false;
         MtpChecked = false;
         ReasoningAvailable = false;
@@ -543,7 +553,6 @@ namespace LlmScanHelper.ViewModels
       _gguf = g;
       _currentPath = m.FullPath;
 
-      bool q8 = g.IsQ8Quant(m.FileName);
       var ms = _store.GetOrCreateModel(m.FullPath);
 
       _suppressSave = true;
@@ -572,8 +581,7 @@ namespace LlmScanHelper.ViewModels
         if (ManualNgl > ManualNglMax)
           ManualNgl = ManualNglMax; // хранимое значение клампим, но не сбрасываем
 
-        // MTP: у Q8-квантов недоступен по заявлению издателя
-        MtpAvailable = g.HasMtp && !q8;
+        MtpAvailable = g.HasMtp;
         MtpChecked = MtpAvailable && ms.MtpChecked;
 
         DraftMax = Math.Clamp(ms.DraftMax, 1, 16);
@@ -597,12 +605,20 @@ namespace LlmScanHelper.ViewModels
         JinjaChecked = ms.JinjaEdited ? ms.UseJinja : g.ToolSupport == ToolSupportKind.Yes;
         _suppressJinjaEdit = false;
 
+        // Подробный вердикт по инструментам уводим во всплывашку, в строке — только да/нет/?
         InfoTools = g.ToolSupport switch
+        {
+          ToolSupportKind.Yes => "да",
+          ToolSupportKind.No => "нет",
+          _ => "?"
+        };
+        InfoToolsFull = g.ToolSupport switch
         {
           ToolSupportKind.Yes => "да — " + g.ToolEvidence,
           ToolSupportKind.No => "нет — " + g.ToolEvidence,
           _ => "неизвестно — " + g.ToolEvidence
         };
+        InfoToolsTooltip = InfoToolsFull + "\n\n" + ToolTips.ToolsDetect;
 
         BuildMmprojList(m, ms);
 
@@ -617,11 +633,12 @@ namespace LlmScanHelper.ViewModels
         InfoBlocks = g.BlockCount.ToString();
         InfoMaxCtx = g.ContextLength.ToString();
         InfoFileSize = $"{g.FileSize / GiB:F2} GiB";
-        InfoMtpSize = g.HasMtp ? $"~{g.MtpSize / MiB:F0} MiB" : "нет";
-        InfoQuant = q8 ? "Q8_0 — MTP отключён" : "-";
+        InfoMtp = FormatInfoMtp(g);
+        InfoMultimodal = MmprojAvailable ? "да" : "нет";
+        InfoReasoning = g.HasReasoning ? "да" : "нет";
 
         StatusText = $"Загружено: {m.FileName}" +
-               $" | MTP: {(g.HasMtp ? (MtpAvailable ? "да" : "есть, но недоступен (Q8)") : "нет")}" +
+               $" | MTP: {(g.HasMtp ? "да" : "нет")}" +
                $" | reasoning: {(g.HasReasoning ? "да" : "нет")}" +
                $" | tools: {(g.ToolSupport == ToolSupportKind.Yes ? "да" : g.ToolSupport == ToolSupportKind.No ? "нет" : "?")}" +
                (MmprojAvailable ? " | mmproj: да" : "");
@@ -634,6 +651,28 @@ namespace LlmScanHelper.ViewModels
       UpdateFitTargets();
       UpdateLayerEstimate();
       SaveSoon();
+    }
+
+    // Строка MTP в инфо: да/нет + тип и число доп. токенов, если удалось распознать.
+    private static string FormatInfoMtp(GgufInfo g)
+    {
+      if (!g.HasMtp)
+        return "нет";
+      string size = $"~{g.MtpSize / MiB:F0} MiB";
+      if (g.MtpKind.Length == 0)
+        return $"да, {size}";
+      string kind = g.MtpKind == "extra" ? "доп. блоки" : g.MtpKind;   // nextn | mtp
+      return g.MtpTokens > 0
+        ? $"да — {kind}, +{g.MtpTokens} {TokensWord(g.MtpTokens)} за шаг, {size}"
+        : $"да — {kind}, {size}";
+    }
+
+    private static string TokensWord(int n)
+    {
+      int d10 = n % 10, d100 = n % 100;
+      if (d10 == 1 && d100 != 11) return "токен";
+      if (d10 is >= 2 and <= 4 && (d100 < 10 || d100 >= 20)) return "токена";
+      return "токенов";
     }
 
     private void BuildMmprojList(ModelEntry m, ModelSettings ms)

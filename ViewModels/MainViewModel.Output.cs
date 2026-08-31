@@ -127,7 +127,7 @@ namespace LlmScanHelper.ViewModels
         sb.Append(" --seed ").Append(Seed);
       }
 
-      // MTP (draft-mtp): только если доступен (Q8 — заблокирован)
+      // MTP (draft-mtp): только если доступен и включён
       if (MtpAvailable && MtpChecked && g.HasMtp)
       {
         int dMax = DraftMax;
@@ -186,9 +186,6 @@ namespace LlmScanHelper.ViewModels
         if (ModeIndex == 0 && ReserveV100GiB < 1.00)
           w.Add("MTP добавляет speculative context/cache. На V100 запас <1 GiB может быть тесным; если увидишь OOM, первым делом увеличь резерв V100.");
       }
-
-      if (g.HasMtp && !MtpAvailable)
-        w.Add("В модели есть MTP-тензоры, но это Q8-квант: издатель заявляет, что MTP для Q8 недоступен — переключатель отключён принудительно.");
 
       // Tool-calls / агентная работа
       if (JinjaChecked && g.ToolSupport == ToolSupportKind.No)

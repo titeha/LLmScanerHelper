@@ -23,8 +23,12 @@ namespace LlmScanHelper.Models
     public string Arch = "llama";
     public int BlockCount;
     public long ContextLength, KvHeads, HeadDim, EmbdSize, MtpSize;
-    public long FileType;                 // general.file_type (если есть в meta)
     public bool HasReasoning;
+
+    // Детали MTP: тип реализации и сколько доп. токенов модель предсказывает за шаг
+    // (число MTP-слоёв). "" / "нет", если MTP не найден; токены 0 = не удалось выяснить.
+    public string MtpKind = "";           // nextn | mtp | extra (blk.N сверх block_count)
+    public int MtpTokens;
 
     // Tool-calls (агентная работа): chat-шаблон + спец-токены словаря
     public bool HasChatTemplate;
@@ -34,17 +38,6 @@ namespace LlmScanHelper.Models
     public long FileSize;
 
     public bool HasMtp => MtpSize > 0;
-
-    // LLAMA_FTYPE_MOSTLY_Q8_0 == 5 (см. llama.h LLAMA_FTYPE_*).
-    // Плюс проверка имени файла: "...-Q8_0.gguf" / "...Q8.gguf".
-    public bool IsQ8Quant(string fileName) => FileType == 5 || DetectQ8FromName(fileName);
-
-    public static bool DetectQ8FromName(string fileName)
-    {
-      // Совпадения: Q8_0, Q8-0, Q8.0, Q8 ; НЕ совпадает IQ8_XXS (там перед Q8 буква I).
-      return Regex.IsMatch(fileName ?? string.Empty, @"(^|[^A-Za-z0-9])Q8([._\-]?0)?([^A-Za-z0-9]|$)",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-    }
 
     public static GgufInfo Read(string path)
     {
@@ -74,7 +67,6 @@ namespace LlmScanHelper.Models
 
         g.BlockCount = (int)Num(meta, g.Arch + ".block_count");
         g.ContextLength = (long)Num(meta, g.Arch + ".context_length", 32768);
-        g.FileType = (long)Num(meta, "general.file_type", 0);
 
         long heads = (long)Num(meta, g.Arch + ".head_count", 1);
         g.KvHeads = (long)Num(meta, g.Arch + ".head_count_kv", heads);
@@ -117,6 +109,11 @@ namespace LlmScanHelper.Models
         var order = Enumerable.Range(0, names.Count).OrderBy(i => offs[i]).ToList();
         g.LayerSize = new long[Math.Max(0, g.BlockCount)];
 
+        // индексы слоёв по типам MTP — для «тип» и «сколько токенов предсказывает»
+        var nextnIdx = new HashSet<int>();
+        var mtpIdx = new HashSet<int>();
+        var extraIdx = new HashSet<int>();
+
         for (int j = 0; j < order.Count; j++)
         {
           int i = order[j];
@@ -133,11 +130,17 @@ namespace LlmScanHelper.Models
             throw new Exception($"Отрицательный размер тензора для {names[i]}");
 
           string name = names[i];
-          bool explicitMtp = name.IndexOf(".mtp.", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                     name.IndexOf("nextn", StringComparison.OrdinalIgnoreCase) >= 0;
+          bool isNextn = name.IndexOf("nextn", StringComparison.OrdinalIgnoreCase) >= 0;
+          bool explicitMtp = isNextn ||
+                     name.IndexOf(".mtp.", StringComparison.OrdinalIgnoreCase) >= 0;
 
           if (explicitMtp)
+          {
             g.MtpSize += size;
+            var bm = Regex.Match(name, @"^blk\.(\d+)\.");
+            if (bm.Success && int.TryParse(bm.Groups[1].Value, out int bi))
+              (isNextn ? nextnIdx : mtpIdx).Add(bi);
+          }
           else if (name.StartsWith("token_embd", StringComparison.OrdinalIgnoreCase))
             g.EmbdSize += size;
           else
@@ -148,10 +151,19 @@ namespace LlmScanHelper.Models
               if (li >= 0 && li < g.BlockCount)
                 g.LayerSize[li] += size;
               else
+              {
                 g.MtpSize += size; // дополнительный blk.N за block_count
+                extraIdx.Add(li);
+              }
             }
           }
         }
+
+        // Тип MTP и число предсказываемых токенов: приоритет nextn > mtp > доп. блоки.
+        // Один слой = один доп. токен за шаг; без индексов слой не распознать (токены = 0).
+        if (nextnIdx.Count > 0) { g.MtpKind = "nextn"; g.MtpTokens = nextnIdx.Count; }
+        else if (mtpIdx.Count > 0) { g.MtpKind = "mtp"; g.MtpTokens = mtpIdx.Count; }
+        else if (extraIdx.Count > 0) { g.MtpKind = "extra"; g.MtpTokens = extraIdx.Count; }
       }
 
       return g;

@@ -143,7 +143,6 @@ namespace LlmScanHelper.Texts
       "--spec-type draft-mtp: мульти-токен предикшн (спекулятивный декодинг через MTP-блок модели).\n" +
       "Ускоряет decode при хорошем acceptance, но расходует память и требует свободной VRAM.\n" +
       "Дефолты llama.cpp: draft max=3, draft min=0; min не больше max.\n" +
-      "ВАЖНО: для Q8-квантов издатель заявляет недоступность MTP — переключатель отключён.\n" +
       "На пограничной по VRAM модели сначала добейся стабильной работы БЕЗ MTP.\n" + ServerDoc;
 
     public const string DraftMax =
@@ -227,6 +226,19 @@ namespace LlmScanHelper.Texts
     public const string FitTargets =
       "Как будет выглядеть --fit-target в команде: свободная VRAM минус резервы,\n" +
       "в порядке --device. MiB считаются из GiB (1024^3).";
+
+    public const string MtpInfoRow =
+      "MTP (multi-token prediction): есть ли в модели встроенные слои доп. предсказания.\n" +
+      "Тип: nextn / mtp / доп. блоки — как реализовано; +N токенов за шаг — сколько доп.\n" +
+      "токенов модель умеет предсказать (по числу MTP-слоёв).";
+
+    public const string MultimodalRow =
+      "Мультимодальность: найден ли рядом с моделью файл-проектор mmproj*.gguf.\n" +
+      "Включается в блоке «Мультимодальность (--mmproj)».";
+
+    public const string ReasoningRow =
+      "Рассуждения: есть ли поддержка режима рассуждений (в chat-шаблоне найдено\n" +
+      "enable_thinking/reasoning или тег reasoning). Включается чекбоксом «reasoning ВКЛ».";
 
     public const string CatalogCombo =
       "Список корневых каталогов с моделями. Каталог добавляется, удаляется или редактируется кнопками ниже.";

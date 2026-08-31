@@ -405,7 +405,7 @@
                     <CheckBox Content="--jinja (родной chat-шаблон)"
                               IsChecked="{Binding JinjaChecked}"
                               ToolTip="{x:Static t:ToolTips.JinjaFlag}" />
-                    <TextBlock Text="{Binding InfoTools}"
+                    <TextBlock Text="{Binding InfoToolsFull}"
                                Margin="12,0,0,0"
                                VerticalAlignment="Center"
                                MaxWidth="480"
@@ -582,10 +582,11 @@
               <GroupBox Header="Информация о модели">
                 <Grid>
                   <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="110" />
+                    <ColumnDefinition Width="135" />
                     <ColumnDefinition Width="*" />
                   </Grid.ColumnDefinitions>
                   <Grid.RowDefinitions>
+                    <RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
@@ -623,36 +624,48 @@
                              Text="{Binding InfoMaxCtx}" />
                   <TextBlock Grid.Row="3"
                              Grid.Column="0"
-                             Text="Квант:"
+                             Text="GGUF:"
                              FontWeight="SemiBold" />
                   <TextBlock Grid.Row="3"
                              Grid.Column="1"
-                             Text="{Binding InfoQuant}"
-                             Foreground="DarkRed" />
-                  <TextBlock Grid.Row="4"
-                             Grid.Column="0"
-                             Text="GGUF:"
-                             FontWeight="SemiBold" />
-                  <TextBlock Grid.Row="4"
-                             Grid.Column="1"
                              Text="{Binding InfoFileSize}" />
+                  <TextBlock Grid.Row="4"
+                             Grid.Column="0"
+                             Text="MTP:"
+                             FontWeight="SemiBold"
+                             ToolTip="{x:Static t:ToolTips.MtpInfoRow}" />
+                  <TextBlock Grid.Row="4"
+                             Grid.Column="1"
+                             Text="{Binding InfoMtp}"
+                             TextWrapping="Wrap"
+                             ToolTip="{x:Static t:ToolTips.MtpInfoRow}" />
                   <TextBlock Grid.Row="5"
                              Grid.Column="0"
-                             Text="MTP tensors:"
-                             FontWeight="SemiBold" />
+                             Text="Мультимодальность:"
+                             FontWeight="SemiBold"
+                             ToolTip="{x:Static t:ToolTips.MultimodalRow}" />
                   <TextBlock Grid.Row="5"
                              Grid.Column="1"
-                             Text="{Binding InfoMtpSize}" />
+                             Text="{Binding InfoMultimodal}"
+                             ToolTip="{x:Static t:ToolTips.MultimodalRow}" />
                   <TextBlock Grid.Row="6"
+                             Grid.Column="0"
+                             Text="Рассуждения:"
+                             FontWeight="SemiBold"
+                             ToolTip="{x:Static t:ToolTips.ReasoningRow}" />
+                  <TextBlock Grid.Row="6"
+                             Grid.Column="1"
+                             Text="{Binding InfoReasoning}"
+                             ToolTip="{x:Static t:ToolTips.ReasoningRow}" />
+                  <TextBlock Grid.Row="7"
                              Grid.Column="0"
                              Text="Инструменты:"
                              FontWeight="SemiBold"
-                             ToolTip="{x:Static t:ToolTips.ToolsDetect}" />
-                  <TextBlock Grid.Row="6"
+                             ToolTip="{Binding InfoToolsTooltip}" />
+                  <TextBlock Grid.Row="7"
                              Grid.Column="1"
                              Text="{Binding InfoTools}"
-                             TextWrapping="Wrap"
-                             ToolTip="{x:Static t:ToolTips.ToolsDetect}" />
+                             ToolTip="{Binding InfoToolsTooltip}" />
                 </Grid>
               </GroupBox>
 
