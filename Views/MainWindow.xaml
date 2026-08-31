@@ -27,15 +27,8 @@
         <StackPanel DockPanel.Dock="Top"
                     Margin="10,8,10,2">
           <StackPanel Orientation="Horizontal">
-            <TextBlock Text="Каталог моделей:"
-                       Style="{StaticResource Lbl}" />
-            <TextBlock Text="{Binding SelectedCatalogText}"
-                       Foreground="DimGray"
-                       Margin="2,0,0,0"
-                       ToolTip="{x:Static t:ToolTips.CurrentCatalog}" />
-            <Button Content="Сканировать каталог GGUF"
+            <Button Content="Сканировать GGUF"
                     Command="{Binding ScanCommand}"
-                    Margin="8,0,0,0"
                     Padding="10,3"
                     ToolTip="{x:Static t:ToolTips.ScanButton}" />
             <Button Content="Обновить GPU"
