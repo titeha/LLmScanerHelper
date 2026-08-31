@@ -50,9 +50,10 @@ dotnet run -c Release
 | `Models/GpuService.cs` | `llama-server --list-devices` (парсинг CUDA-id и свободной VRAM) |
 | `Models/LayerEstimator.cs` | грубая оценка раскладки блоков (веса+KV) по картам |
 | `Models/Settings/SettingsStore.cs` | JSON-хранилище (portable) |
-| `Texts/MemoText.cs` | текст памятки «ПОЧЕМУ ТАК» |
+| `Texts/memo.md` | памятка «ПОЧЕМУ ТАК» (Markdown, вкладка «Памятка»; парсер — позже) |
 | `Texts/ToolTips.cs` | popup-подсказки по всем параметрам (зачем/влияет/дока) |
 | `Controls/TextBoxHelpers.cs` | attached-поведение: коммит TextBox по Enter |
+| `Assets/app.ico` / `app-icon.png` | иконка приложения (exe и окно) |
 
 ## Параметры
 

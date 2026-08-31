@@ -13,11 +13,19 @@
     <LangVersion>latest</LangVersion>
     <!-- Не тащим спутниковые локализации для всех культур -->
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MahApps.Metro" Version="2.4.11" />
     <PackageReference Include="Ti-Soft.MvvmUtilites" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Памятка «почему так» в Markdown; парсер — позже, пока сырой текст -->
+    <Resource Include="Texts\memo.md" />
+    <!-- Иконка окна (exe-иконка — через ApplicationIcon) -->
+    <Resource Include="Assets\app-icon.png" />
   </ItemGroup>
 
 </Project>
