@@ -1,0 +1,767 @@
+<UserControl x:Class="LlmScanHelper.Views.PanelTabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:m="clr-namespace:LlmScanHelper.Models"
+             xmlns:t="clr-namespace:LlmScanHelper.Texts"
+             xmlns:ctrl="clr-namespace:LlmScanHelper.Controls">
+
+  <DockPanel>
+        <!-- Инструментальная полоса -->
+        <StackPanel DockPanel.Dock="Top"
+                    Margin="10,8,10,2">
+          <StackPanel Orientation="Horizontal">
+            <Button Content="Сканировать GGUF"
+                    Command="{Binding ScanCommand}"
+                    Padding="10,3"
+                    ToolTip="{x:Static t:ToolTips.ScanButton}" />
+            <Button Content="Обновить GPU"
+                    Command="{Binding RefreshGpusCommand}"
+                    Margin="6,0,0,0"
+                    Padding="10,3"
+                    ToolTip="{x:Static t:ToolTips.RefreshGpu}" />
+            <TextBlock Text="  Модель:"
+                       Style="{StaticResource Lbl}"
+                       Margin="10,0,6,0" />
+            <ComboBox Width="620"
+                      ItemsSource="{Binding Models}"
+                      SelectedItem="{Binding SelectedModel}"
+                      ToolTip="{x:Static t:ToolTips.ModelCombo}" />
+          </StackPanel>
+          <TextBlock Text="{Binding StatusText}"
+                     Foreground="DarkBlue"
+                     Margin="0,6,0,0" />
+        </StackPanel>
+
+        <Grid Margin="10,6,10,8">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="440" />
+          </Grid.ColumnDefinitions>
+
+          <!-- ======== ЛЕВАЯ КОЛОНКА: ПАРАМЕТРЫ ======== -->
+          <ScrollViewer VerticalScrollBarVisibility="Auto"
+                        Grid.Column="0">
+            <StackPanel Margin="0,0,8,0">
+
+              <!-- API alias -->
+              <GroupBox Header="API alias">
+                <StackPanel Style="{StaticResource Row}">
+                  <TextBlock Text="Model alias (--alias):"
+                             Style="{StaticResource Lbl}" />
+                  <TextBox Width="360"
+                           Text="{Binding AliasText, UpdateSourceTrigger=PropertyChanged}"
+                           VerticalContentAlignment="Center"
+                           ctrl:TextBoxHelpers.CommitOnEnter="True"
+                           ToolTip="{x:Static t:ToolTips.Alias}" />
+                  <TextBlock Text="регистр сохраняется (GPT, UD — не трогаются)"
+                             Style="{StaticResource HintText}"
+                             Margin="10,0,0,0"
+                             VerticalAlignment="Center" />
+                </StackPanel>
+              </GroupBox>
+
+              <!-- Контекст / KV / Attention -->
+              <GroupBox Header="Контекст / KV / Attention">
+                <StackPanel>
+                  <StackPanel Style="{StaticResource Row}">
+                    <TextBlock Text="Контекст:"
+                               Style="{StaticResource Lbl}"
+                               MinWidth="150" />
+                    <TextBox Width="90"
+                             Text="{Binding Context, UpdateSourceTrigger=LostFocus}"
+                             VerticalContentAlignment="Center"
+                             ctrl:TextBoxHelpers.CommitOnEnter="True"
+                             ToolTip="{x:Static t:ToolTips.Context}" />
+                    <Slider Width="280"
+                            Margin="8,0,0,0"
+                            Minimum="1024"
+                            Maximum="{Binding MaxContext}"
+                            TickFrequency="{Binding ContextTick}"
+                            LargeChange="{Binding ContextLarge}"
+                            SmallChange="1024"
+                            Value="{Binding Context}"
+                            ToolTip="{x:Static t:ToolTips.Context}" />
+                    <TextBlock Text="токенов (-c)"
+                               Style="{StaticResource HintText}"
+                               Margin="8,0,0,0"
+                               VerticalAlignment="Center" />
+                  </StackPanel>
+                  <StackPanel Style="{StaticResource Row}">
+                    <TextBlock Text="KV K:"
+                               Style="{StaticResource Lbl}"
+                               MinWidth="150" />
+                    <ComboBox Width="80"
+                              ItemsSource="{Binding KvOptions}"
+                              SelectedItem="{Binding KvK}"
+                              ToolTip="{x:Static t:ToolTips.KvK}" />
+                    <TextBlock Text="KV V:"
+                               Style="{StaticResource Lbl}"
+                               Margin="16,0,6,0" />
+                    <ComboBox Width="80"
+                              ItemsSource="{Binding KvOptions}"
+                              SelectedItem="{Binding KvV}"
+                              ToolTip="{x:Static t:ToolTips.KvV}" />
+                    <TextBlock Text="FlashAttn:"
+                               Style="{StaticResource Lbl}"
+                               Margin="16,0,6,0" />
+                    <ComboBox Width="80"
+                              ItemsSource="{Binding FlashOptions}"
+                              SelectedItem="{Binding Flash}"
+                              ToolTip="{x:Static t:ToolTips.Flash}" />
+                  </StackPanel>
+                </StackPanel>
+              </GroupBox>
+
+              <!-- GPU layout -->
+              <GroupBox Header="GPU layout">
+                <StackPanel>
+                  <StackPanel Style="{StaticResource Row}">
+                    <TextBlock Text="Режим:"
+                               Style="{StaticResource Lbl}" />
+                    <ComboBox Width="200"
+                              ItemsSource="{Binding ModeOptions}"
+                              SelectedIndex="{Binding ModeIndex}"
+                              ToolTip="{x:Static t:ToolTips.Mode}" />
+                    <TextBlock Text="Устройства:"
+                               Style="{StaticResource Lbl}"
+                               Margin="14,0,6,0" />
+                    <TextBox Width="150"
+                             Text="{Binding DevicesText, UpdateSourceTrigger=PropertyChanged}"
+                             VerticalContentAlignment="Center"
+                             ctrl:TextBoxHelpers.CommitOnEnter="True"
+                             ToolTip="{x:Static t:ToolTips.Devices}" />
+                    <TextBlock Text="split-mode:"
+                               Style="{StaticResource Lbl}"
+                               Margin="14,0,6,0" />
+                    <ComboBox Width="90"
+                              ItemsSource="{Binding SplitModeOptions}"
+                              SelectedItem="{Binding SplitMode}"
+                              IsEnabled="{Binding ManualModeActive}"
+                              ToolTip="{x:Static t:ToolTips.SplitMode}" />
+                  </StackPanel>
+                  <StackPanel Style="{StaticResource Row}">
+                    <TextBlock Text="AUTO резерв V100 GiB:"
+                               Style="{StaticResource Lbl}"
+                               MinWidth="150" />
+                    <mah:NumericUpDown Width="90"
+                                    Minimum="0.25"
+                                    Maximum="8"
+                                    Interval="0.25"
+                                    StringFormat="0.00"
+                                    Value="{Binding ReserveV100GiB}"
+                                    IsEnabled="{Binding AutoModeActive}"
+                                    ToolTip="{x:Static t:ToolTips.ReserveV100}" />
+                    <TextBlock Text="desktop RTX GiB:"
+                               Style="{StaticResource Lbl}"
+                               Margin="14,0,6,0" />
+                    <mah:NumericUpDown Width="90"
+                                    Minimum="{x:Static m:AppDefaults.MinDesktopReserveGiB}"
+                                    Maximum="8"
+                                    Interval="0.25"
+                                    StringFormat="0.00"
+                                    Value="{Binding ReserveRtxGiB}"
+                                    IsEnabled="{Binding AutoModeActive}"
+                                    ToolTip="{x:Static t:ToolTips.ReserveRtx}" />
+                    <TextBlock Text="{Binding FitTargetsText}"
+                               Foreground="DarkGreen"
+                               Margin="14,0,0,0"
+                               VerticalAlignment="Center"
+                               ToolTip="{x:Static t:ToolTips.FitTargets}" />
+                  </StackPanel>
+                  <TextBlock Foreground="DarkRed"
+                             TextWrapping="Wrap"
+                             Margin="0,6,0,0"
+                             Text="SAFE: после загрузки модели не открывай новые GPU-тяжёлые приложения. --fit-target не hard-cap." />
+                  <StackPanel Style="{StaticResource Row}">
+                    <TextBlock Text="MANUAL -ngl:"
+                               Style="{StaticResource Lbl}"
+                               MinWidth="150" />
+                    <mah:NumericUpDown Width="90"
+                                    Minimum="0"
+                                    Maximum="{Binding ManualNglMax}"
+                                    Interval="1"
+                                    Value="{Binding ManualNgl}"
+                                    IsEnabled="{Binding ManualModeActive}"
+                                    ToolTip="{x:Static t:ToolTips.ManualNgl}" />
+                    <TextBlock Text="tensor-split CUDA0:"
+                               Style="{StaticResource Lbl}"
+                               Margin="14,0,6,0" />
+                    <mah:NumericUpDown Width="80"
+                                    Minimum="0"
+                                    Maximum="1000"
+                                    Interval="1"
+                                    Value="{Binding Split0}"
+                                    IsEnabled="{Binding ManualModeActive}"
+                                    ToolTip="{x:Static t:ToolTips.TensorSplit}" />
+                    <TextBlock Text="CUDA1:"
+                               Style="{StaticResource Lbl}"
+                               Margin="8,0,6,0" />
+                    <mah:NumericUpDown Width="80"
+                                    Minimum="0"
+                                    Maximum="1000"
+                                    Interval="1"
+                                    Value="{Binding Split1}"
+                                    IsEnabled="{Binding ManualModeActive}"
+                                    ToolTip="{x:Static t:ToolTips.TensorSplit}" />
+                    <TextBlock Text="(это веса/пропорции, НЕ слои)"
+                               Style="{StaticResource HintText}"
+                               Margin="8,0,0,0"
+                               VerticalAlignment="Center" />
+                  </StackPanel>
+                </StackPanel>
+              </GroupBox>
+
+              <!-- Производительность / агент -->
+              <GroupBox Header="Производительность / агент">
+                <StackPanel>
+                  <StackPanel Style="{StaticResource Row}">
+                    <TextBlock Text="batch -b:"
+                               Style="{StaticResource Lbl}" />
+                    <mah:NumericUpDown Width="90"
+                                    Minimum="32"
+                                    Maximum="8192"
+                                    Interval="32"
+                                    Value="{Binding Batch}"
+                                    ToolTip="{x:Static t:ToolTips.Batch}" />
+                    <TextBlock Text="ubatch -ub:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="90"
+                                    Minimum="8"
+                                    Maximum="4096"
+                                    Interval="8"
+                                    Value="{Binding UBatch}"
+                                    ToolTip="{x:Static t:ToolTips.UBatch}" />
+                    <TextBlock Text="слотов -np:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="70"
+                                    Minimum="1"
+                                    Maximum="32"
+                                    Interval="1"
+                                    Value="{Binding Slots}"
+                                    ToolTip="{x:Static t:ToolTips.Slots}" />
+                    <TextBlock Text="threads -t (0=auto):"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="70"
+                                    Minimum="0"
+                                    Maximum="64"
+                                    Interval="1"
+                                    Value="{Binding Threads}"
+                                    ToolTip="{x:Static t:ToolTips.Threads}" />
+                    <TextBlock Text="batch threads -tb:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="70"
+                                    Minimum="0"
+                                    Maximum="64"
+                                    Interval="1"
+                                    Value="{Binding ThreadsBatch}"
+                                    ToolTip="{x:Static t:ToolTips.ThreadsBatch}" />
+                  </StackPanel>
+                  <StackPanel Style="{StaticResource Row}">
+                    <CheckBox Content="prompt cache"
+                              IsChecked="{Binding PromptCache}"
+                              Margin="0,0,10,0"
+                              ToolTip="{x:Static t:ToolTips.PromptCache}" />
+                    <TextBlock Text="cache-reuse:"
+                               Style="{StaticResource Lbl}" />
+                    <mah:NumericUpDown Width="90"
+                                    Minimum="0"
+                                    Maximum="16384"
+                                    Interval="64"
+                                    Value="{Binding CacheReuse}"
+                                    IsEnabled="{Binding PromptCache}"
+                                    ToolTip="{x:Static t:ToolTips.CacheReuse}" />
+                    <TextBlock Text="SSE ping, с:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="70"
+                                    Minimum="1"
+                                    Maximum="300"
+                                    Interval="1"
+                                    Value="{Binding SsePing}"
+                                    ToolTip="{x:Static t:ToolTips.SsePing}" />
+                    <TextBlock Text="HTTP timeout, с:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="90"
+                                    Minimum="60"
+                                    Maximum="86400"
+                                    Interval="60"
+                                    Value="{Binding Timeout}"
+                                    ToolTip="{x:Static t:ToolTips.Timeout}" />
+                    <CheckBox Content="--perf"
+                              IsChecked="{Binding Perf}"
+                              Margin="12,0,0,0"
+                              ToolTip="{x:Static t:ToolTips.Perf}" />
+                  </StackPanel>
+                </StackPanel>
+              </GroupBox>
+
+              <!-- MTP / reasoning / server -->
+              <GroupBox Header="MTP / reasoning / server">
+                <StackPanel>
+                  <StackPanel Style="{StaticResource Row}">
+                    <TextBlock Text="Хост:"
+                               Style="{StaticResource Lbl}" />
+                    <TextBox Width="130"
+                             Text="{Binding Host, UpdateSourceTrigger=PropertyChanged}"
+                             VerticalContentAlignment="Center"
+                             ctrl:TextBoxHelpers.CommitOnEnter="True"
+                             ToolTip="{x:Static t:ToolTips.Host}" />
+                    <TextBlock Text="Порт:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="120"
+                             Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"
+                             ToolTip="{x:Static t:ToolTips.Port}" />
+                  </StackPanel>
+
+                  <!-- Каждая способность — свой сворачиваемый контейнер;
+                       отсутствует в модели — контейнер не показывается -->
+                  <Expander Header="MTP (draft-mtp)"
+                            IsExpanded="True"
+                            Margin="0,6,0,0"
+                            Visibility="{Binding MtpAvailable, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                      <StackPanel Style="{StaticResource Row}">
+                        <CheckBox Content="включить"
+                                  IsChecked="{Binding MtpChecked}"
+                                  ToolTip="{Binding MtpToolTip}" />
+                        <TextBlock Text="draft max:"
+                                   Style="{StaticResource Lbl}"
+                                   Margin="12,0,6,0" />
+                        <mah:NumericUpDown Width="60"
+                                        Minimum="1"
+                                        Maximum="16"
+                                        Interval="1"
+                                        Value="{Binding DraftMax}"
+                                        IsEnabled="{Binding IsMtpControlsEnabled}"
+                                        ToolTip="{x:Static t:ToolTips.DraftMax}" />
+                        <TextBlock Text="min:"
+                                   Style="{StaticResource Lbl}"
+                                   Margin="8,0,6,0" />
+                        <mah:NumericUpDown Width="60"
+                                        Minimum="0"
+                                        Maximum="{Binding DraftMax}"
+                                        Interval="1"
+                                        Value="{Binding DraftMin}"
+                                        IsEnabled="{Binding IsMtpControlsEnabled}"
+                                        ToolTip="{x:Static t:ToolTips.DraftMin}" />
+                        <TextBlock Text="p-min:"
+                                   Style="{StaticResource Lbl}"
+                                   Margin="8,0,6,0" />
+                        <mah:NumericUpDown Width="90"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        Interval="0.05"
+                                        StringFormat="0.00"
+                                        Value="{Binding DraftP}"
+                                        IsEnabled="{Binding IsMtpControlsEnabled}"
+                                        ToolTip="{x:Static t:ToolTips.DraftP}" />
+                      </StackPanel>
+                      <StackPanel Style="{StaticResource Row}">
+                        <TextBlock Text="draft KV K:"
+                                   Style="{StaticResource Lbl}" />
+                        <ComboBox Width="80"
+                                  ItemsSource="{Binding KvOptions}"
+                                  SelectedItem="{Binding DraftK}"
+                                  IsEnabled="{Binding IsMtpControlsEnabled}"
+                                  ToolTip="{x:Static t:ToolTips.DraftKv}" />
+                        <TextBlock Text="V:"
+                                   Style="{StaticResource Lbl}"
+                                   Margin="10,0,6,0" />
+                        <ComboBox Width="80"
+                                  ItemsSource="{Binding KvOptions}"
+                                  SelectedItem="{Binding DraftV}"
+                                  IsEnabled="{Binding IsMtpControlsEnabled}"
+                                  ToolTip="{x:Static t:ToolTips.DraftKv}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Expander>
+
+                  <Expander Header="Reasoning (рассуждения)"
+                            IsExpanded="True"
+                            Margin="0,6,0,0"
+                            Visibility="{Binding ReasoningAvailable, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                      <StackPanel Style="{StaticResource Row}">
+                        <CheckBox Content="включить"
+                                  IsChecked="{Binding ReasoningChecked}"
+                                  ToolTip="{x:Static t:ToolTips.Reasoning}" />
+                        <TextBlock Text="reasoning budget (0 → мин.):"
+                                   Style="{StaticResource Lbl}"
+                                   Margin="12,0,6,0" />
+                        <mah:NumericUpDown Width="100"
+                                        Minimum="0"
+                                        Maximum="1000000"
+                                        Interval="1024"
+                                        Value="{Binding ReasonBudget}"
+                                        IsEnabled="{Binding ReasoningChecked}"
+                                        ToolTip="{x:Static t:ToolTips.ReasonBudget}" />
+                      </StackPanel>
+                      <StackPanel Style="{StaticResource Row}">
+                        <TextBlock Text="budget message:"
+                                   Style="{StaticResource Lbl}" />
+                        <TextBox Width="480"
+                                 Text="{Binding ReasonBudgetMessage, UpdateSourceTrigger=PropertyChanged}"
+                                 VerticalContentAlignment="Center"
+                                 IsEnabled="{Binding ReasoningChecked}"
+                                 ctrl:TextBoxHelpers.CommitOnEnter="True"
+                                 ToolTip="{x:Static t:ToolTips.ReasonBudgetMessage}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Expander>
+
+                  <Expander Header="Инструменты (--jinja)"
+                            IsExpanded="True"
+                            Margin="0,6,0,0"
+                            Visibility="{Binding JinjaAvailable, Converter={StaticResource BoolToVis}}">
+                    <StackPanel Style="{StaticResource Row}">
+                      <CheckBox Content="--jinja (родной chat-шаблон)"
+                                IsChecked="{Binding JinjaChecked}"
+                                ToolTip="{x:Static t:ToolTips.JinjaFlag}" />
+                      <TextBlock Text="{Binding InfoToolsFull}"
+                                 Margin="12,0,0,0"
+                                 VerticalAlignment="Center"
+                                 MaxWidth="480"
+                                 TextTrimming="CharacterEllipsis"
+                                 Foreground="DarkGreen"
+                                 ToolTip="{x:Static t:ToolTips.ToolsDetect}" />
+                    </StackPanel>
+                  </Expander>
+                </StackPanel>
+              </GroupBox>
+
+              <!-- Мультимодальность: блок виден, только если рядом с моделью есть mmproj -->
+              <GroupBox Header="Мультимодальность (--mmproj)"
+                        Visibility="{Binding MmprojAvailable, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                  <StackPanel Style="{StaticResource Row}">
+                    <CheckBox Content="Включить мультимодальность"
+                              IsChecked="{Binding MmprojChecked}"
+                              IsEnabled="{Binding MmprojAvailable}"
+                              ToolTip="{x:Static t:ToolTips.MmprojEnabled}" />
+                    <TextBlock Text="mmproj-файл:"
+                               Style="{StaticResource Lbl}"
+                               Margin="16,0,6,0" />
+                    <ComboBox Width="360"
+                              ItemsSource="{Binding MmprojFiles}"
+                              SelectedItem="{Binding SelectedMmproj}"
+                              DisplayMemberPath="DisplayName"
+                              IsEnabled="{Binding MmprojAvailable}"
+                              ToolTip="{x:Static t:ToolTips.MmprojCombo}" />
+                  </StackPanel>
+                  <TextBlock Text="{Binding MmprojInfoText}"
+                             Foreground="DarkGreen"
+                             Margin="0,4,0,0"
+                             ToolTip="{x:Static t:ToolTips.MmprojEnabled}" />
+                </StackPanel>
+              </GroupBox>
+
+              <!-- Sampling -->
+              <GroupBox Header="Sampling — параметры разработчика (дефолты сервера)">
+                <StackPanel>
+                  <CheckBox Content="Передавать sampling-параметры в команду"
+                            IsChecked="{Binding SamplingEnabled}"
+                            ToolTip="{x:Static t:ToolTips.SamplingEnabled}" />
+                  <StackPanel Style="{StaticResource Row}"
+                              IsEnabled="{Binding SamplingEnabled}">
+                    <TextBlock Text="temp:"
+                               Style="{StaticResource Lbl}" />
+                    <mah:NumericUpDown Width="80"
+                                    Minimum="0"
+                                    Maximum="2"
+                                    Interval="0.05"
+                                    StringFormat="0.00"
+                                    Value="{Binding Temp}"
+                                    ToolTip="{x:Static t:ToolTips.Temp}" />
+                    <TextBlock Text="top-k:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="80"
+                                    Minimum="0"
+                                    Maximum="200"
+                                    Interval="1"
+                                    Value="{Binding TopK}"
+                                    ToolTip="{x:Static t:ToolTips.TopK}" />
+                    <TextBlock Text="top-p:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="80"
+                                    Minimum="0"
+                                    Maximum="1"
+                                    Interval="0.01"
+                                    StringFormat="0.00"
+                                    Value="{Binding TopP}"
+                                    ToolTip="{x:Static t:ToolTips.TopP}" />
+                    <TextBlock Text="min-p:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="80"
+                                    Minimum="0"
+                                    Maximum="1"
+                                    Interval="0.01"
+                                    StringFormat="0.00"
+                                    Value="{Binding MinP}"
+                                    ToolTip="{x:Static t:ToolTips.MinP}" />
+                  </StackPanel>
+                  <StackPanel Style="{StaticResource Row}"
+                              IsEnabled="{Binding SamplingEnabled}">
+                    <TextBlock Text="repeat-penalty:"
+                               Style="{StaticResource Lbl}" />
+                    <mah:NumericUpDown Width="80"
+                                    Minimum="0"
+                                    Maximum="2"
+                                    Interval="0.01"
+                                    StringFormat="0.00"
+                                    Value="{Binding RepeatPenalty}"
+                                    ToolTip="{x:Static t:ToolTips.RepeatPenalty}" />
+                    <TextBlock Text="repeat-last-n:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="90"
+                                    Minimum="0"
+                                    Maximum="8192"
+                                    Interval="64"
+                                    Value="{Binding RepeatLastN}"
+                                    ToolTip="{x:Static t:ToolTips.RepeatLastN}" />
+                    <TextBlock Text="presence-penalty:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="80"
+                                    Minimum="-2"
+                                    Maximum="2"
+                                    Interval="0.05"
+                                    StringFormat="0.00"
+                                    Value="{Binding PresencePenalty}"
+                                    ToolTip="{x:Static t:ToolTips.PresencePenalty}" />
+                    <TextBlock Text="frequency-penalty:"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="80"
+                                    Minimum="-2"
+                                    Maximum="2"
+                                    Interval="0.05"
+                                    StringFormat="0.00"
+                                    Value="{Binding FrequencyPenalty}"
+                                    ToolTip="{x:Static t:ToolTips.FrequencyPenalty}" />
+                    <TextBlock Text="seed (-1=случайный):"
+                               Style="{StaticResource Lbl}"
+                               Margin="12,0,6,0" />
+                    <mah:NumericUpDown Width="110"
+                                    Minimum="-1"
+                                    Maximum="2000000000"
+                                    Interval="1"
+                                    Value="{Binding Seed}"
+                                    ToolTip="{x:Static t:ToolTips.Seed}" />
+                  </StackPanel>
+                </StackPanel>
+              </GroupBox>
+
+              <!-- Пресеты -->
+              <GroupBox Header="Пресеты">
+                <StackPanel>
+                  <WrapPanel>
+                    <Button Content="V100 ONLY — новая модель"
+                            Command="{Binding PresetV100OnlyCommand}"
+                            Style="{StaticResource PresetButton}" />
+                    <Button Content="RTX ONLY — без V100"
+                            Command="{Binding PresetRtxOnlyCommand}"
+                            Style="{StaticResource PresetButton}" />
+                    <Button Content="SAFE — RTX резерв 3.0 GiB"
+                            Command="{Binding PresetSafeCommand}"
+                            Style="{StaticResource PresetButton}" />
+                    <Button Content="BALANCED — 2.5 GiB"
+                            Command="{Binding PresetBalancedCommand}"
+                            Style="{StaticResource PresetButton}" />
+                    <Button Content="AGGRESSIVE — 2.0 GiB"
+                            Command="{Binding PresetAggressiveCommand}"
+                            Style="{StaticResource PresetButton}" />
+                  </WrapPanel>
+                  <WrapPanel>
+                    <Button Content="Q8 SAFE — меньше batch"
+                            Command="{Binding PresetQ8Command}"
+                            Style="{StaticResource PresetButton}" />
+                    <Button Content="V100 ubatch=64 EXP"
+                            Command="{Binding PresetV100Command}"
+                            Style="{StaticResource PresetButton}" />
+                  </WrapPanel>
+                </StackPanel>
+              </GroupBox>
+
+            </StackPanel>
+          </ScrollViewer>
+
+          <!-- ======== ПРАВАЯ КОЛОНКА: ИНФО / КОМАНДА ======== -->
+          <ScrollViewer VerticalScrollBarVisibility="Auto"
+                        Grid.Column="1">
+            <StackPanel>
+
+              <GroupBox Header="Информация о модели">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="135" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                  </Grid.RowDefinitions>
+                  <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                      <Setter Property="Margin"
+                              Value="0,2,6,2" />
+                      <Setter Property="VerticalAlignment"
+                              Value="Center" />
+                    </Style>
+                  </Grid.Resources>
+                  <TextBlock Grid.Row="0"
+                             Grid.Column="0"
+                             Text="Архитектура:"
+                             FontWeight="SemiBold" />
+                  <TextBlock Grid.Row="0"
+                             Grid.Column="1"
+                             Text="{Binding InfoArch}" />
+                  <TextBlock Grid.Row="1"
+                             Grid.Column="0"
+                             Text="Блоков:"
+                             FontWeight="SemiBold" />
+                  <TextBlock Grid.Row="1"
+                             Grid.Column="1"
+                             Text="{Binding InfoBlocks}" />
+                  <TextBlock Grid.Row="2"
+                             Grid.Column="0"
+                             Text="Макс ctx:"
+                             FontWeight="SemiBold" />
+                  <TextBlock Grid.Row="2"
+                             Grid.Column="1"
+                             Text="{Binding InfoMaxCtx}" />
+                  <TextBlock Grid.Row="3"
+                             Grid.Column="0"
+                             Text="GGUF:"
+                             FontWeight="SemiBold" />
+                  <TextBlock Grid.Row="3"
+                             Grid.Column="1"
+                             Text="{Binding InfoFileSize}" />
+                  <TextBlock Grid.Row="4"
+                             Grid.Column="0"
+                             Text="MTP:"
+                             FontWeight="SemiBold"
+                             ToolTip="{x:Static t:ToolTips.MtpInfoRow}" />
+                  <TextBlock Grid.Row="4"
+                             Grid.Column="1"
+                             Text="{Binding InfoMtp}"
+                             TextWrapping="Wrap"
+                             ToolTip="{x:Static t:ToolTips.MtpInfoRow}" />
+                  <TextBlock Grid.Row="5"
+                             Grid.Column="0"
+                             Text="Мультимодальность:"
+                             FontWeight="SemiBold"
+                             ToolTip="{x:Static t:ToolTips.MultimodalRow}" />
+                  <TextBlock Grid.Row="5"
+                             Grid.Column="1"
+                             Text="{Binding InfoMultimodal}"
+                             ToolTip="{x:Static t:ToolTips.MultimodalRow}" />
+                  <TextBlock Grid.Row="6"
+                             Grid.Column="0"
+                             Text="Рассуждения:"
+                             FontWeight="SemiBold"
+                             ToolTip="{x:Static t:ToolTips.ReasoningRow}" />
+                  <TextBlock Grid.Row="6"
+                             Grid.Column="1"
+                             Text="{Binding InfoReasoning}"
+                             ToolTip="{x:Static t:ToolTips.ReasoningRow}" />
+                  <TextBlock Grid.Row="7"
+                             Grid.Column="0"
+                             Text="Инструменты:"
+                             FontWeight="SemiBold"
+                             ToolTip="{Binding InfoToolsTooltip}" />
+                  <TextBlock Grid.Row="7"
+                             Grid.Column="1"
+                             Text="{Binding InfoTools}"
+                             ToolTip="{Binding InfoToolsTooltip}" />
+                </Grid>
+              </GroupBox>
+
+              <GroupBox Header="GPU">
+                <StackPanel>
+                  <TextBlock Text="{Binding GpuSummaryText}"
+                             TextWrapping="Wrap"
+                             Foreground="DarkGreen"
+                             ToolTip="{x:Static t:ToolTips.RefreshGpu}" />
+                  <TextBlock Text="{Binding FitTargetsText}"
+                             Foreground="DarkGreen"
+                             Margin="0,4,0,0"
+                             ToolTip="{x:Static t:ToolTips.FitTargets}" />
+                </StackPanel>
+              </GroupBox>
+
+              <GroupBox Header="Распределение слоёв (оценка)">
+                <StackPanel>
+                  <TextBox Style="{StaticResource MonoText}"
+                           Text="{Binding LayerEstimateText, Mode=OneWay}"
+                           TextWrapping="Wrap"
+                           MinHeight="96"
+                           VerticalScrollBarVisibility="Auto"
+                           ToolTip="{x:Static t:ToolTips.LayerEstimate}" />
+                </StackPanel>
+              </GroupBox>
+
+              <GroupBox Header="Строка запуска">
+                <StackPanel>
+                  <TextBox Style="{StaticResource MonoText}"
+                           Text="{Binding LaunchCommand, Mode=OneWay}"
+                           TextWrapping="Wrap"
+                           MinHeight="120"
+                           MaxHeight="300"
+                           VerticalScrollBarVisibility="Auto" />
+                  <StackPanel Orientation="Horizontal"
+                              Margin="0,8,0,0">
+                    <Button Content="Собрать команду"
+                            Command="{Binding BuildCommandCommand}"
+                            Padding="10,4"
+                            ToolTip="{x:Static t:ToolTips.BuildButton}" />
+                    <Button Content="Копировать в буфер"
+                            Command="{Binding CopyCommandCommand}"
+                            Padding="10,4"
+                            Margin="8,0,0,0"
+                            ToolTip="{x:Static t:ToolTips.CopyButton}" />
+                    <TextBlock Text="{Binding CopyStatusText}"
+                               Foreground="DarkGreen"
+                               VerticalAlignment="Center"
+                               Margin="10,0,0,0" />
+                  </StackPanel>
+                </StackPanel>
+              </GroupBox>
+
+              <GroupBox Header="Предупреждения">
+                <ItemsControl ItemsSource="{Binding Warnings}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock TextWrapping="Wrap"
+                                 Margin="0,2,0,2">
+                                                <Run Text="• "
+                                                     Foreground="DarkOrange"
+                                                     FontWeight="Bold" />
+                                                <Run Text="{Binding Mode=OneWay}" />
+                      </TextBlock>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </GroupBox>
+
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+  </DockPanel>
+</UserControl>

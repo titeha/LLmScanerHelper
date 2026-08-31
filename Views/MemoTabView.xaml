@@ -1,0 +1,12 @@
+<UserControl x:Class="LlmScanHelper.Views.MemoTabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:t="clr-namespace:LlmScanHelper.Texts">
+
+  <TextBox Style="{StaticResource MonoText}"
+           Text="{x:Static t:MemoText.All}"
+           TextWrapping="NoWrap"
+           VerticalScrollBarVisibility="Auto"
+           HorizontalScrollBarVisibility="Auto"
+           Margin="10" />
+</UserControl>

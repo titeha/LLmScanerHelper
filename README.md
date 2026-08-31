@@ -33,7 +33,10 @@ dotnet run -c Release
 
 | Файл | Назначение |
 |---|---|
-| `Views/MainWindow.xaml` | весь интерфейс (TabControl: «Панель» + «Памятка» + «Настройки») |
+| `Views/MainWindow.xaml` | каркас окна: вкладки-контейнеры трёх представлений |
+| `Views/PanelTabView.xaml` | вкладка «Панель»: параметры, инфо, команда |
+| `Views/MemoTabView.xaml` | вкладка «Памятка» |
+| `Views/SettingsTabView.xaml` | вкладка «Настройки»: каталоги моделей |
 | `ViewModels/MainViewModel.cs` | ядро: состояние, параметры, команды, сканирование |
 | `ViewModels/MainViewModel.Model.cs` | инфо о модели, загрузка, мультимодальность (mmproj) |
 | `ViewModels/MainViewModel.MtpReasoning.cs` | сервер (хост/порт), MTP, reasoning, jinja |

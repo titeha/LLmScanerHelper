@@ -1,0 +1,35 @@
+<UserControl x:Class="LlmScanHelper.Views.SettingsTabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:t="clr-namespace:LlmScanHelper.Texts">
+
+  <StackPanel Margin="10">
+    <TextBlock Text="Каталоги моделей:"
+               Style="{StaticResource Lbl}" />
+    <TextBlock Text="{Binding SelectedCatalogText}"
+               Foreground="DimGray"
+               Margin="0,2,0,8" />
+    <ComboBox Width="480"
+              ItemsSource="{Binding Catalogs}"
+              SelectedItem="{Binding SelectedCatalog}"
+              ToolTip="{x:Static t:ToolTips.CatalogCombo}" />
+    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+      <Button Content="Добавить"
+              Command="{Binding AddCatalogCommand}"
+              Padding="10,4"
+              Margin="0,0,6,0"
+              ToolTip="{x:Static t:ToolTips.AddCatalog}" />
+      <Button Content="Удалить"
+              Command="{Binding RemoveCatalogCommand}"
+              Padding="10,4"
+              Margin="0,0,6,0"
+              ToolTip="{x:Static t:ToolTips.RemoveCatalog}" />
+      <Button Content="Изменить"
+              Command="{Binding EditCatalogCommand}"
+              Padding="10,4"
+              ToolTip="{x:Static t:ToolTips.EditCatalog}" />
+    </StackPanel>
+    <TextBlock Text="Активный каталог используется при сканировании и загрузке моделей."
+               Style="{StaticResource HintText}" />
+  </StackPanel>
+</UserControl>
