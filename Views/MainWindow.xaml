@@ -338,99 +338,121 @@
                     <TextBox Width="120"
                              Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"
                              ToolTip="{x:Static t:ToolTips.Port}" />
-                    <!-- Управление MTP: спрятано, если в модели нет MTP-тензоров -->
-                    <StackPanel Orientation="Horizontal"
-                                Visibility="{Binding MtpAvailable, Converter={StaticResource BoolToVis}}">
-                      <CheckBox Content="MTP (draft-mtp)"
-                                IsChecked="{Binding MtpChecked}"
-                                IsEnabled="{Binding MtpAvailable}"
-                                Margin="16,0,10,0"
-                                ToolTip="{Binding MtpToolTip}" />
-                      <TextBlock Text="draft max:"
-                                 Style="{StaticResource Lbl}" />
-                      <mah:NumericUpDown Width="60"
-                                      Minimum="1"
-                                      Maximum="16"
-                                      Interval="1"
-                                      Value="{Binding DraftMax}"
-                                      IsEnabled="{Binding IsMtpControlsEnabled}"
-                                      ToolTip="{x:Static t:ToolTips.DraftMax}" />
-                      <TextBlock Text="min:"
-                                 Style="{StaticResource Lbl}"
-                                 Margin="8,0,6,0" />
-                      <mah:NumericUpDown Width="60"
-                                      Minimum="0"
-                                      Maximum="{Binding DraftMax}"
-                                      Interval="1"
-                                      Value="{Binding DraftMin}"
-                                      IsEnabled="{Binding IsMtpControlsEnabled}"
-                                      ToolTip="{x:Static t:ToolTips.DraftMin}" />
-                      <TextBlock Text="p-min:"
-                                 Style="{StaticResource Lbl}"
-                                 Margin="8,0,6,0" />
-                      <mah:NumericUpDown Width="90"
-                                      Minimum="0"
-                                      Maximum="1"
-                                      Interval="0.05"
-                                      StringFormat="0.00"
-                                      Value="{Binding DraftP}"
-                                      IsEnabled="{Binding IsMtpControlsEnabled}"
-                                      ToolTip="{x:Static t:ToolTips.DraftP}" />
-                    </StackPanel>
                   </StackPanel>
-                  <!-- Ряд целиком прячется, если в модели нет ни MTP, ни reasoning -->
-                  <StackPanel Style="{StaticResource Row}"
-                              Visibility="{Binding HasMtpOrReasoning, Converter={StaticResource BoolToVis}}">
-                    <StackPanel Orientation="Horizontal"
-                                Visibility="{Binding MtpAvailable, Converter={StaticResource BoolToVis}}">
-                      <TextBlock Text="draft KV K:"
-                                 Style="{StaticResource Lbl}" />
-                      <ComboBox Width="80"
-                                ItemsSource="{Binding KvOptions}"
-                                SelectedItem="{Binding DraftK}"
-                                IsEnabled="{Binding IsMtpControlsEnabled}"
-                                ToolTip="{x:Static t:ToolTips.DraftKv}" />
-                      <TextBlock Text="V:"
-                                 Style="{StaticResource Lbl}"
-                                 Margin="10,0,6,0" />
-                      <ComboBox Width="80"
-                                ItemsSource="{Binding KvOptions}"
-                                SelectedItem="{Binding DraftV}"
-                                IsEnabled="{Binding IsMtpControlsEnabled}"
-                                ToolTip="{x:Static t:ToolTips.DraftKv}" />
+
+                  <!-- Каждая способность — свой сворачиваемый контейнер;
+                       отсутствует в модели — контейнер не показывается -->
+                  <Expander Header="MTP (draft-mtp)"
+                            IsExpanded="True"
+                            Margin="0,6,0,0"
+                            Visibility="{Binding MtpAvailable, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                      <StackPanel Style="{StaticResource Row}">
+                        <CheckBox Content="включить"
+                                  IsChecked="{Binding MtpChecked}"
+                                  ToolTip="{Binding MtpToolTip}" />
+                        <TextBlock Text="draft max:"
+                                   Style="{StaticResource Lbl}"
+                                   Margin="12,0,6,0" />
+                        <mah:NumericUpDown Width="60"
+                                        Minimum="1"
+                                        Maximum="16"
+                                        Interval="1"
+                                        Value="{Binding DraftMax}"
+                                        IsEnabled="{Binding IsMtpControlsEnabled}"
+                                        ToolTip="{x:Static t:ToolTips.DraftMax}" />
+                        <TextBlock Text="min:"
+                                   Style="{StaticResource Lbl}"
+                                   Margin="8,0,6,0" />
+                        <mah:NumericUpDown Width="60"
+                                        Minimum="0"
+                                        Maximum="{Binding DraftMax}"
+                                        Interval="1"
+                                        Value="{Binding DraftMin}"
+                                        IsEnabled="{Binding IsMtpControlsEnabled}"
+                                        ToolTip="{x:Static t:ToolTips.DraftMin}" />
+                        <TextBlock Text="p-min:"
+                                   Style="{StaticResource Lbl}"
+                                   Margin="8,0,6,0" />
+                        <mah:NumericUpDown Width="90"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        Interval="0.05"
+                                        StringFormat="0.00"
+                                        Value="{Binding DraftP}"
+                                        IsEnabled="{Binding IsMtpControlsEnabled}"
+                                        ToolTip="{x:Static t:ToolTips.DraftP}" />
+                      </StackPanel>
+                      <StackPanel Style="{StaticResource Row}">
+                        <TextBlock Text="draft KV K:"
+                                   Style="{StaticResource Lbl}" />
+                        <ComboBox Width="80"
+                                  ItemsSource="{Binding KvOptions}"
+                                  SelectedItem="{Binding DraftK}"
+                                  IsEnabled="{Binding IsMtpControlsEnabled}"
+                                  ToolTip="{x:Static t:ToolTips.DraftKv}" />
+                        <TextBlock Text="V:"
+                                   Style="{StaticResource Lbl}"
+                                   Margin="10,0,6,0" />
+                        <ComboBox Width="80"
+                                  ItemsSource="{Binding KvOptions}"
+                                  SelectedItem="{Binding DraftV}"
+                                  IsEnabled="{Binding IsMtpControlsEnabled}"
+                                  ToolTip="{x:Static t:ToolTips.DraftKv}" />
+                      </StackPanel>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal"
-                                Visibility="{Binding ReasoningAvailable, Converter={StaticResource BoolToVis}}">
-                      <CheckBox Content="reasoning ВКЛ"
-                                IsChecked="{Binding ReasoningChecked}"
-                                IsEnabled="{Binding ReasoningAvailable}"
-                                Margin="16,0,10,0"
-                                ToolTip="{x:Static t:ToolTips.Reasoning}" />
-                      <TextBlock Text="reasoning budget (0 → мин.):"
-                                 Style="{StaticResource Lbl}" />
-                      <mah:NumericUpDown Width="100"
-                                      Minimum="0"
-                                      Maximum="1000000"
-                                      Interval="1024"
-                                      Value="{Binding ReasonBudget}"
-                                      IsEnabled="{Binding ReasoningChecked}"
-                                      ToolTip="{x:Static t:ToolTips.ReasonBudget}" />
+                  </Expander>
+
+                  <Expander Header="Reasoning (рассуждения)"
+                            IsExpanded="True"
+                            Margin="0,6,0,0"
+                            Visibility="{Binding ReasoningAvailable, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                      <StackPanel Style="{StaticResource Row}">
+                        <CheckBox Content="включить"
+                                  IsChecked="{Binding ReasoningChecked}"
+                                  ToolTip="{x:Static t:ToolTips.Reasoning}" />
+                        <TextBlock Text="reasoning budget (0 → мин.):"
+                                   Style="{StaticResource Lbl}"
+                                   Margin="12,0,6,0" />
+                        <mah:NumericUpDown Width="100"
+                                        Minimum="0"
+                                        Maximum="1000000"
+                                        Interval="1024"
+                                        Value="{Binding ReasonBudget}"
+                                        IsEnabled="{Binding ReasoningChecked}"
+                                        ToolTip="{x:Static t:ToolTips.ReasonBudget}" />
+                      </StackPanel>
+                      <StackPanel Style="{StaticResource Row}">
+                        <TextBlock Text="budget message:"
+                                   Style="{StaticResource Lbl}" />
+                        <TextBox Width="480"
+                                 Text="{Binding ReasonBudgetMessage, UpdateSourceTrigger=PropertyChanged}"
+                                 VerticalContentAlignment="Center"
+                                 IsEnabled="{Binding ReasoningChecked}"
+                                 ctrl:TextBoxHelpers.CommitOnEnter="True"
+                                 ToolTip="{x:Static t:ToolTips.ReasonBudgetMessage}" />
+                      </StackPanel>
                     </StackPanel>
-                  </StackPanel>
-                  <!-- Строка с jinja: только если в GGUF есть chat-шаблон -->
-                  <StackPanel Style="{StaticResource Row}"
-                              Visibility="{Binding JinjaAvailable, Converter={StaticResource BoolToVis}}">
-                    <CheckBox Content="--jinja (родной chat-шаблон)"
-                              IsChecked="{Binding JinjaChecked}"
-                              ToolTip="{x:Static t:ToolTips.JinjaFlag}" />
-                    <TextBlock Text="{Binding InfoToolsFull}"
-                               Margin="12,0,0,0"
-                               VerticalAlignment="Center"
-                               MaxWidth="480"
-                               TextTrimming="CharacterEllipsis"
-                               Foreground="DarkGreen"
-                               ToolTip="{x:Static t:ToolTips.ToolsDetect}" />
-                  </StackPanel>
+                  </Expander>
+
+                  <Expander Header="Инструменты (--jinja)"
+                            IsExpanded="True"
+                            Margin="0,6,0,0"
+                            Visibility="{Binding JinjaAvailable, Converter={StaticResource BoolToVis}}">
+                    <StackPanel Style="{StaticResource Row}">
+                      <CheckBox Content="--jinja (родной chat-шаблон)"
+                                IsChecked="{Binding JinjaChecked}"
+                                ToolTip="{x:Static t:ToolTips.JinjaFlag}" />
+                      <TextBlock Text="{Binding InfoToolsFull}"
+                                 Margin="12,0,0,0"
+                                 VerticalAlignment="Center"
+                                 MaxWidth="480"
+                                 TextTrimming="CharacterEllipsis"
+                                 Foreground="DarkGreen"
+                                 ToolTip="{x:Static t:ToolTips.ToolsDetect}" />
+                    </StackPanel>
+                  </Expander>
                 </StackPanel>
               </GroupBox>
 

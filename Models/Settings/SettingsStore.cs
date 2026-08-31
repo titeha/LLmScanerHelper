@@ -64,6 +64,7 @@ namespace LlmScanHelper.Models.Settings
 
     public bool ReasoningChecked { get; set; } = true;
     public int ReasonBudget { get; set; } = 4096;
+    public string ReasonBudgetMessage { get; set; } = "";   // пусто = дефолт из AppDefaults
 
     public bool UseJinja { get; set; }                // --jinja: родной chat-шаблон GGUF (tools/agents)
     public bool JinjaEdited { get; set; }             // юзер переключал вручную — авто-детект не переопределяет

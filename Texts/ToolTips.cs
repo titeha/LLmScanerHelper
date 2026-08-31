@@ -161,6 +161,11 @@ namespace LlmScanHelper.Texts
       "--reasoning on|off: явное управление режимом рассуждений (для thinking-моделей).\n" +
       "Детектится по чат-шаблону (enable_thinking/reasoning) и тегам GGUF.\n" + ServerDoc;
 
+    public const string ReasonBudgetMessage =
+      "--reasoning-budget-message: сообщение про исчерпание бюджета рассуждений.\n" +
+      "Передаётся обязательно вместе с бюджетом. По умолчанию — стандартный текст;\n" +
+      "можно вписать свой, при очищенном поле подставится стандартный.";
+
     public const string ReasonBudget =
       "Бюджет reasoning-токенов (флаг задаётся константой ReasoningBudgetFlag).\n" +
       "0 — подставляется минимальное значение (runtime не принимает 0, ошибка старта).\n" +

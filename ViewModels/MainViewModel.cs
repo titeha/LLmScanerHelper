@@ -294,7 +294,6 @@ namespace LlmScanHelper.ViewModels
           OnPropertyChanged(nameof(MtpLockReason));
           OnPropertyChanged(nameof(MtpToolTip));
           OnPropertyChanged(nameof(IsMtpControlsEnabled));
-          OnPropertyChanged(nameof(HasMtpOrReasoning));
         }
       }
     }
@@ -361,15 +360,7 @@ namespace LlmScanHelper.ViewModels
     public string DraftV { get => _draftV; set { if (Set(ref _draftV, value)) SaveSoon(); } }
 
     private bool _reasoningAvailable;
-    public bool ReasoningAvailable
-    {
-      get => _reasoningAvailable;
-      private set
-      {
-        if (Set(ref _reasoningAvailable, value))
-          OnPropertyChanged(nameof(HasMtpOrReasoning));
-      }
-    }
+    public bool ReasoningAvailable { get => _reasoningAvailable; private set => Set(ref _reasoningAvailable, value); }
 
     private bool _reasoningChecked;
     public bool ReasoningChecked { get => _reasoningChecked; set { if (Set(ref _reasoningChecked, value)) SaveSoon(); } }
@@ -379,6 +370,13 @@ namespace LlmScanHelper.ViewModels
     {
       get => _reasonBudget;
       set { value = Math.Clamp(value, 0, 1_000_000); if (Set(ref _reasonBudget, value)) SaveSoon(); }
+    }
+
+    private string _reasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
+    public string ReasonBudgetMessage
+    {
+      get => _reasonBudgetMessage;
+      set { if (Set(ref _reasonBudgetMessage, value)) SaveSoon(); }
     }
 
     // --jinja: родной chat-шаблон GGUF (нужен для tool-calls/функций в OpenAI API).
@@ -413,9 +411,6 @@ namespace LlmScanHelper.ViewModels
 
     private bool _jinjaAvailable;
     public bool JinjaAvailable { get => _jinjaAvailable; private set => Set(ref _jinjaAvailable, value); }
-
-    /// <summary>Ряд с draft KV и reasoning: прячется целиком, если в модели нет ни того ни другого.</summary>
-    public bool HasMtpOrReasoning => MtpAvailable || ReasoningAvailable;
 
     private MmprojEntry? _selectedMmproj;
     public MmprojEntry? SelectedMmproj
@@ -543,6 +538,7 @@ namespace LlmScanHelper.ViewModels
         MtpChecked = false;
         ReasoningAvailable = false;
         ReasoningChecked = false;
+        ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
         JinjaChecked = false;
         JinjaAvailable = false;
         MmprojAvailable = false;
@@ -617,6 +613,9 @@ namespace LlmScanHelper.ViewModels
         ReasoningAvailable = g.HasReasoning;
         ReasoningChecked = g.HasReasoning && ms.ReasoningChecked;
         ReasonBudget = Math.Clamp(ms.ReasonBudget, 0, 1_000_000);
+        ReasonBudgetMessage = string.IsNullOrWhiteSpace(ms.ReasonBudgetMessage)
+          ? AppDefaults.DefaultReasonBudgetMessage
+          : ms.ReasonBudgetMessage;
 
         // --jinja: авто по вердикту сканера; ручной выбор юзера имеет приоритет
         _suppressJinjaEdit = true;
@@ -1140,6 +1139,7 @@ namespace LlmScanHelper.ViewModels
       ms.DraftV = DraftV;
       ms.ReasoningChecked = ReasoningChecked;
       ms.ReasonBudget = ReasonBudget;
+      ms.ReasonBudgetMessage = ReasonBudgetMessage;
       ms.UseJinja = JinjaChecked;   // ms.JinjaEdited — только из сеттера (ручная правка)
       ms.MmprojPath = SelectedMmproj?.FullPath ?? "";
       ms.MmprojEnabled = MmprojAvailable && MmprojChecked;

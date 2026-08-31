@@ -12,8 +12,9 @@ namespace LlmScanHelper.ViewModels
   /// </summary>
   public sealed partial class MainViewModel
   {
-    // Имя флага бюджета reasoning гуляет между билдами — правится в ОДНОМ месте.
+    // Имена флагов бюджета reasoning гуляют между билдами — правятся в ОДНОМ месте.
     private const string ReasoningBudgetFlag = "--reasoning-budget";
+    private const string ReasonBudgetMessageFlag = "--reasoning-budget-message";
     // Минимальный бюджет reasoning-токенов. runtime не принимает 0 (ошибка старта),
     // поэтому при включённом reasoning 0 подставляется именно это значение.
     private const int ReasonBudgetMin = 4096;
@@ -152,6 +153,13 @@ namespace LlmScanHelper.ViewModels
           // runtime не принимает 0 — подставляем минимальное значение
           var budget = ReasonBudget > 0 ? ReasonBudget : ReasonBudgetMin;
           sb.Append(" ").Append(ReasoningBudgetFlag).Append(" ").Append((long)budget);
+
+          // сообщение при исчерпании бюджета — обязательно вместе с бюджетом
+          var msg = string.IsNullOrWhiteSpace(ReasonBudgetMessage)
+            ? AppDefaults.DefaultReasonBudgetMessage
+            : ReasonBudgetMessage.Trim();
+          sb.Append(" ").Append(ReasonBudgetMessageFlag)
+            .Append(" \"").Append(msg.Replace("\"", "\\\"")).Append("\"");
         }
       }
 
