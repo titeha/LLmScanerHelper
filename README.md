@@ -53,6 +53,7 @@ dotnet run -c Release
 | `Texts/memo.md` | памятка «ПОЧЕМУ ТАК» (Markdown, вкладка «Памятка»; парсер — позже) |
 | `Texts/ToolTips.cs` | popup-подсказки по всем параметрам (зачем/влияет/дока) |
 | `Controls/TextBoxHelpers.cs` | attached-поведение: коммит TextBox по Enter |
+| `Controls/ToolTipLinker.cs` | кликабельные ссылки в тултипах (перехват «сквозного» клика) |
 | `Assets/app.ico` / `app-icon.png` | иконка приложения (exe и окно) |
 
 ## Параметры
