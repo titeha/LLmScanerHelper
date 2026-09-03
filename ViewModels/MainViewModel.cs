@@ -91,6 +91,8 @@ namespace LlmScanHelper.ViewModels
 
     public string[] KvOptions { get; } = { "f16", "q8_0", "q4_0" };
     public string[] FlashOptions { get; } = { "auto", "on", "off" };
+    // ТЗ2: режим рассуждений (значения совпадают с флагом --reasoning).
+    public string[] ReasoningModeOptions { get; } = { "auto", "on", "off" };
     public string[] ModeOptions { get; } = { "AUTO — llama.cpp --fit", "MANUAL — экспертный" };
     public string[] SplitModeOptions { get; } = { "layer", "row", "tensor", "none" };
 

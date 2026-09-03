@@ -158,7 +158,9 @@ namespace LlmScanHelper.Texts
       "Тип квантования KV-кэша спекулятивного (draft) контекста MTP.\n" + ServerDoc;
 
     public const string Reasoning =
-      "--reasoning on|off: явное управление режимом рассуждений (для thinking-моделей).\n" +
+      "--reasoning on|off|auto: режим рассуждений (для thinking-моделей).\n" +
+      "auto — runtime решает сам по чат-шаблону (дефолт); on — всегда включено; off — всегда выкл.\n" +
+      "Бюджет и сообщение доступны при on и auto (при off не передаются).\n" +
       "Детектится по чат-шаблону (enable_thinking/reasoning) и тегам GGUF.\n" + ServerDoc;
 
     public const string ReasonBudgetMessage =

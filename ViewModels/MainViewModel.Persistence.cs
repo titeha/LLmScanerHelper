@@ -154,7 +154,7 @@ namespace LlmScanHelper.ViewModels
       ms.DraftP = DraftP;
       ms.DraftK = DraftK;
       ms.DraftV = DraftV;
-      ms.ReasoningChecked = ReasoningChecked;
+      ms.ReasoningMode = ReasoningMode;
       ms.ReasonBudget = ReasonBudget;
       ms.ReasonBudgetMessage = ReasonBudgetMessage;
       ms.UseJinja = JinjaChecked;   // ms.JinjaEdited — только из сеттера (ручная правка)

@@ -145,8 +145,13 @@ namespace LlmScanHelper.ViewModels
 
       if (g.HasReasoning)
       {
-        sb.Append(" --reasoning ").Append(ReasoningChecked ? "on" : "off");
-        if (ReasoningChecked)
+        // ТЗ2: on → --reasoning on, off → --reasoning off, auto → флаг не передаём
+        // (дефолт runtime — auto, решает по чат-шаблону).
+        if (ReasoningMode == "on") sb.Append(" --reasoning on");
+        else if (ReasoningMode == "off") sb.Append(" --reasoning off");
+
+        // Бюджет и сообщение — при on и auto (не off).
+        if (ReasoningMode != "off")
         {
           // ТЗ3: бюджет — только при значении > 0. 0 → не передаём (в runtime это unlimited).
           if (ReasonBudget > 0)

@@ -60,7 +60,7 @@ namespace LlmScanHelper.ViewModels
         MtpAvailable = false;
         MtpChecked = false;
         ReasoningAvailable = false;
-        ReasoningChecked = false;
+        ReasoningMode = AppDefaults.DefaultReasoningMode;
         ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
         JinjaChecked = false;
         JinjaAvailable = false;
@@ -144,7 +144,9 @@ namespace LlmScanHelper.ViewModels
           DraftV = "q8_0";
 
         ReasoningAvailable = g.HasReasoning;
-        ReasoningChecked = g.HasReasoning && ms.ReasoningChecked;
+        ReasoningMode = ReasoningModeOptions.Contains(ms.ReasoningMode)
+          ? ms.ReasoningMode
+          : AppDefaults.DefaultReasoningMode;
         ReasonBudget = Math.Clamp(ms.ReasonBudget, 0, 1_000_000);
         ReasonBudgetMessage = string.IsNullOrWhiteSpace(ms.ReasonBudgetMessage)
           ? AppDefaults.DefaultReasonBudgetMessage

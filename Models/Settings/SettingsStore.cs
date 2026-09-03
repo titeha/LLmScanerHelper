@@ -62,7 +62,11 @@ namespace LlmScanHelper.Models.Settings
     public string DraftK { get; set; } = "q8_0";
     public string DraftV { get; set; } = "q8_0";
 
-    public bool ReasoningChecked { get; set; } = true;
+    // ТЗ2: режим рассуждений on/off/auto (ранее bool ReasoningChecked).
+    public string ReasoningMode { get; set; } = AppDefaults.DefaultReasoningMode;
+    // Мостик миграции из старых файлов (bool). После миграции в ReasoningMode — null.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? ReasoningChecked { get; set; }
     public int ReasonBudget { get; set; } = 4096;
     public string ReasonBudgetMessage { get; set; } = "";   // пусто = дефолт из AppDefaults
 
@@ -112,11 +116,15 @@ namespace LlmScanHelper.Models.Settings
 
     public string FilePath { get; }
 
-    public SettingsStore()
+    public SettingsStore() : this(Path.Combine(AppContext.BaseDirectory, "settings.json"))
     {
       // JSON рядом с exe — переносимый режим
-      string dir = AppContext.BaseDirectory;
-      FilePath = Path.Combine(dir, "settings.json");
+    }
+
+    // internal — для тестов миграции настроек из старых файлов.
+    internal SettingsStore(string filePath)
+    {
+      FilePath = filePath;
     }
 
     public void Load()
@@ -144,6 +152,17 @@ namespace LlmScanHelper.Models.Settings
             };
             Settings.SelectedCatalogIndex = 0;
             Settings.ModelsRoot = null;
+          }
+
+          // Миграция ТЗ2: старые файлы хранили ReasoningChecked (bool). Переносим
+          // в ReasoningMode (true → on, false → off) и обнуляем мостик.
+          foreach (var ms in Settings.PerModel.Values)
+          {
+            if (ms.ReasoningChecked.HasValue)
+            {
+              ms.ReasoningMode = ms.ReasoningChecked.Value ? "on" : "off";
+              ms.ReasoningChecked = null;
+            }
           }
         }
       }

@@ -95,8 +95,23 @@ namespace LlmScanHelper.ViewModels
     private bool _reasoningAvailable;
     public bool ReasoningAvailable { get => _reasoningAvailable; private set => Set(ref _reasoningAvailable, value); }
 
-    private bool _reasoningChecked;
-    public bool ReasoningChecked { get => _reasoningChecked; set { if (Set(ref _reasoningChecked, value)) SaveSoon(); } }
+    // ТЗ2: режим рассуждений on/off/auto (ранее bool «включить»).
+    private string _reasoningMode = AppDefaults.DefaultReasoningMode;
+    public string ReasoningMode
+    {
+      get => _reasoningMode;
+      set
+      {
+        if (Set(ref _reasoningMode, value))
+        {
+          OnPropertyChanged(nameof(IsReasoningControlsEnabled));
+          SaveSoon();
+        }
+      }
+    }
+
+    /// <summary>Поля бюджета/сообщения активны при on и auto (не off).</summary>
+    public bool IsReasoningControlsEnabled => ReasoningMode != "off";
 
     private int _reasonBudget = 4096;
     public int ReasonBudget
