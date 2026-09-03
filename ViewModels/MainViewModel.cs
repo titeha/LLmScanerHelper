@@ -23,9 +23,9 @@ namespace LlmScanHelper.ViewModels
   public sealed partial class MainViewModel : ObservableObject
   {
     private readonly SettingsStore _store = new();
-    private GgufInfo? _gguf;
+    internal GgufInfo? _gguf;              // internal — для регрессионных тестов
     private List<GpuDeviceInfo> _gpus = new();
-    private string? _currentPath;          // путь текущей модели (ключ по-модельного профиля)
+    internal string? _currentPath;         // путь текущей модели (ключ по-модельного профиля); internal — для тестов
     private bool _suppressSave;            // массовое применение — без сохранения
     private bool _suppressAliasEdit;       // программная установка алиаса
     private int _loadSeq;                  // защита от гонок при быстрой смене моделей

@@ -41,7 +41,8 @@ namespace LlmScanHelper.ViewModels
       CopyStatusText = "";
     }
 
-    private string BuildCommand(string modelPath)
+    // internal — для регрессионных тестов сборки команды (LLMScanHelper.Tests).
+    internal string BuildCommand(string modelPath)
     {
       var g = _gguf;
       if (g == null) return "(сначала выбери модель)";
