@@ -15,9 +15,6 @@ namespace LlmScanHelper.ViewModels
     // Имена флагов бюджета reasoning гуляют между билдами — правятся в ОДНОМ месте.
     private const string ReasoningBudgetFlag = "--reasoning-budget";
     private const string ReasonBudgetMessageFlag = "--reasoning-budget-message";
-    // Минимальный бюджет reasoning-токенов. runtime не принимает 0 (ошибка старта),
-    // поэтому при включённом reasoning 0 подставляется именно это значение.
-    private const int ReasonBudgetMin = 4096;
 
     // ==================== «Собрать команду» ====================
 
@@ -151,16 +148,17 @@ namespace LlmScanHelper.ViewModels
         sb.Append(" --reasoning ").Append(ReasoningChecked ? "on" : "off");
         if (ReasoningChecked)
         {
-          // runtime не принимает 0 — подставляем минимальное значение
-          var budget = ReasonBudget > 0 ? ReasonBudget : ReasonBudgetMin;
-          sb.Append(" ").Append(ReasoningBudgetFlag).Append(" ").Append((long)budget);
+          // ТЗ3: бюджет — только при значении > 0. 0 → не передаём (в runtime это unlimited).
+          if (ReasonBudget > 0)
+            sb.Append(" ").Append(ReasoningBudgetFlag).Append(" ").Append((long)ReasonBudget);
 
-          // сообщение при исчерпании бюджета — обязательно вместе с бюджетом
-          var msg = string.IsNullOrWhiteSpace(ReasonBudgetMessage)
-            ? AppDefaults.DefaultReasonBudgetMessage
-            : ReasonBudgetMessage.Trim();
-          sb.Append(" ").Append(ReasonBudgetMessageFlag)
-            .Append(" \"").Append(msg.Replace("\"", "\\\"")).Append("\"");
+          // ТЗ3: сообщение — только при непустом значении (поле предзаполнено стандартным текстом).
+          if (!string.IsNullOrWhiteSpace(ReasonBudgetMessage))
+          {
+            var msg = ReasonBudgetMessage.Trim();
+            sb.Append(" ").Append(ReasonBudgetMessageFlag)
+              .Append(" \"").Append(msg.Replace("\"", "\\\"")).Append("\"");
+          }
         }
       }
 
