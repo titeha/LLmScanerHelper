@@ -26,16 +26,31 @@
   <mah:MetroWindow.RightWindowCommands>
     <mah:WindowCommands mah:ControlsHelper.ContentCharacterCasing="Normal">
       <Button Command="{Binding OpenSettingsCommand}"
-              Padding="8,2"
+              Padding="4"
+              HorizontalContentAlignment="Center"
+              VerticalContentAlignment="Center"
               ToolTip="{x:Static t:ToolTips.SettingsButton}"
-              Width="22" Height="22">
-        <Image Source="svg-data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='#454A57' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3.2'/%3E%3Cpath d='M19.4 14.9a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V18a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 0 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V6a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V12a1.6 1.6 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z'/%3E%3C/svg%3E"
-              Stretch="Uniform" />
+              Width="28" Height="28">
+        <!-- Иконка — в Assets/Icons.xaml (StaticResource), здесь только оформление. -->
+        <Path Width="20" Height="20" Stretch="Uniform"
+              Fill="Transparent"
+              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+              StrokeThickness="1.5" StrokeLineJoin="Round"
+              Data="{StaticResource SettingsGear}" />
       </Button>
-      <Button Content="?"
-              Command="{Binding OpenHelpCommand}"
-              Padding="8,2"
-              ToolTip="{x:Static t:ToolTips.HelpButton}" />
+      <Button Command="{Binding OpenHelpCommand}"
+              Padding="4"
+              HorizontalContentAlignment="Center"
+              VerticalContentAlignment="Center"
+              ToolTip="{x:Static t:ToolTips.HelpButton}"
+              Width="28" Height="28">
+        <!-- Иконка — в Assets/Icons.xaml (StaticResource), здесь только оформление. -->
+        <Path Width="20" Height="20" Stretch="Uniform"
+              Fill="Transparent"
+              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+              StrokeThickness="1.5" StrokeLineJoin="Round"
+              Data="{StaticResource HelpBang}" />
+      </Button>
     </mah:WindowCommands>
   </mah:MetroWindow.RightWindowCommands>
 </mah:MetroWindow>

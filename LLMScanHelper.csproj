@@ -27,6 +27,8 @@
     <Resource Include="Texts\memo.md" />
     <!-- Иконка окна (exe-иконка — через ApplicationIcon) -->
     <Resource Include="Assets\app-icon.png" />
+    <!-- Иконки кнопок заголовка (шестерёнка / «!») -->
+    <Resource Include="Assets\Icons.xaml" />
   </ItemGroup>
 
   <ItemGroup>
