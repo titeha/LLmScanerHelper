@@ -4,6 +4,7 @@ using System.Windows.Threading;
 
 using LlmScanHelper.Models;
 using LlmScanHelper.Models.Settings;
+using LlmScanHelper.Views;
 using MvvmUtilites;
 
 namespace LlmScanHelper.ViewModels
@@ -54,6 +55,21 @@ namespace LlmScanHelper.ViewModels
       AddCatalogCommand = new RelayCommand(AddCatalog);
       RemoveCatalogCommand = new RelayCommand(RemoveCatalog);
       EditCatalogCommand = new RelayCommand(EditCatalog);
+
+      OpenSettingsCommand = new RelayCommand(OpenSettings);
+      OpenHelpCommand = new RelayCommand(OpenHelp);
+    }
+
+    /// <summary>Открывает модальное окно настроек (блокирует главное до закрытия).</summary>
+    private void OpenSettings()
+    {
+      new SettingsWindow(this).ShowDialog();
+    }
+
+    /// <summary>Открывает модальное окно справки «Почему так» (блокирует главное до закрытия).</summary>
+    private void OpenHelp()
+    {
+      new HelpWindow(this).ShowDialog();
     }
 
     /// <summary>Вызывается из MainWindow после загрузки окна.</summary>
@@ -240,6 +256,8 @@ namespace LlmScanHelper.ViewModels
     public ICommand AddCatalogCommand { get; }
     public ICommand RemoveCatalogCommand { get; }
     public ICommand EditCatalogCommand { get; }
+    public ICommand OpenSettingsCommand { get; }
+    public ICommand OpenHelpCommand { get; }
 
     // ==================== Сканирование ====================
 
