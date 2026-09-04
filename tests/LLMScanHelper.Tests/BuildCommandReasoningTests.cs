@@ -8,7 +8,10 @@ namespace LlmScanHelper.Tests;
 /// ТЗ2 + ТЗ3: сборка reasoning-флагов в команду.
 ///   ТЗ2: on → --reasoning on; off → --reasoning off; auto → флаг не передаётся.
 ///        Бюджет/сообщение — при on и auto (не off).
-///   ТЗ3: --reasoning-budget — только при &gt; 0; --reasoning-budget-message — только при непустом.
+///   ТЗ3: --reasoning-budget — только при &gt; 0.
+///        --reasoning-budget-message — **обязательно** при budget &gt; 0 (если поле пусто — дефолт).
+///        Если budget = 0 → оба параметра не передаются.
+///        Если reasoning = off → только --reasoning off, без budget/message.
 /// GgufInfo создаётся в памяти (без парсинга файла) — тестируем логику сборки команды.
 /// </summary>
 public class BuildCommandReasoningTests
@@ -49,7 +52,22 @@ public class BuildCommandReasoningTests
   }
 
   [Fact]
-  public void On_BudgetZero_OmitsBudgetFlag()
+  public void On_BudgetPositive_MessageEmpty_UsesDefaultMessage()
+  {
+    var vm = CreateVm();
+    vm.ReasoningMode = "on";
+    vm.ReasonBudget = 4096;
+    vm.ReasonBudgetMessage = "";  // пусто → ставим дефолт
+
+    string cmd = vm.BuildCommand(ModelPath);
+
+    Assert.Contains("--reasoning on", cmd);
+    Assert.Contains(BudgetFlag + "4096", cmd);
+    Assert.Contains(MsgFlag + "\"" + AppDefaults.DefaultReasonBudgetMessage + "\"", cmd);
+  }
+
+  [Fact]
+  public void On_BudgetZero_OmitsBothBudgetAndMessage()
   {
     var vm = CreateVm();
     vm.ReasoningMode = "on";
@@ -60,21 +78,6 @@ public class BuildCommandReasoningTests
 
     Assert.Contains("--reasoning on", cmd);
     Assert.DoesNotContain(BudgetFlag, cmd);
-    Assert.Contains(MsgFlag, cmd);
-  }
-
-  [Fact]
-  public void On_MessageEmpty_OmitsMessageFlag()
-  {
-    var vm = CreateVm();
-    vm.ReasoningMode = "on";
-    vm.ReasonBudget = 8192;
-    vm.ReasonBudgetMessage = "";
-
-    string cmd = vm.BuildCommand(ModelPath);
-
-    Assert.Contains("--reasoning on", cmd);
-    Assert.Contains(BudgetFlag + "8192", cmd);
     Assert.DoesNotContain(MsgFlag, cmd);
   }
 
@@ -127,6 +130,36 @@ public class BuildCommandReasoningTests
     // но бюджет и сообщение всё равно передаются
     Assert.Contains(BudgetFlag + "4096", cmd);
     Assert.Contains(MsgFlag, cmd);
+  }
+
+  [Fact]
+  public void Auto_BudgetPositive_MessageEmpty_UsesDefaultMessage()
+  {
+    var vm = CreateVm();
+    vm.ReasoningMode = "auto";
+    vm.ReasonBudget = 4096;
+    vm.ReasonBudgetMessage = "";  // пусто → дефолт
+
+    string cmd = vm.BuildCommand(ModelPath);
+
+    Assert.DoesNotContain("--reasoning ", cmd);
+    Assert.Contains(BudgetFlag + "4096", cmd);
+    Assert.Contains(MsgFlag + "\"" + AppDefaults.DefaultReasonBudgetMessage + "\"", cmd);
+  }
+
+  [Fact]
+  public void Auto_BudgetZero_OmitsBothFlags()
+  {
+    var vm = CreateVm();
+    vm.ReasoningMode = "auto";
+    vm.ReasonBudget = 0;
+    vm.ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
+
+    string cmd = vm.BuildCommand(ModelPath);
+
+    Assert.DoesNotContain("--reasoning ", cmd);
+    Assert.DoesNotContain(BudgetFlag, cmd);
+    Assert.DoesNotContain(MsgFlag, cmd);
   }
 
   [Fact]

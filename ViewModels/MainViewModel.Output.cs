@@ -155,14 +155,18 @@ namespace LlmScanHelper.ViewModels
         {
           // ТЗ3: бюджет — только при значении > 0. 0 → не передаём (в runtime это unlimited).
           if (ReasonBudget > 0)
-            sb.Append(" ").Append(ReasoningBudgetFlag).Append(" ").Append((long)ReasonBudget);
-
-          // ТЗ3: сообщение — только при непустом значении (поле предзаполнено стандартным текстом).
-          if (!string.IsNullOrWhiteSpace(ReasonBudgetMessage))
           {
-            var msg = ReasonBudgetMessage.Trim();
+            sb.Append(" ").Append(ReasoningBudgetFlag).Append(" ").Append((long)ReasonBudget);
+            // Сообщение — обязательно при budget > 0. Если поле пустое, ставим дефолт.
+            var msg = ReasonBudgetMessage?.Trim();
+            if (string.IsNullOrWhiteSpace(msg))
+              msg = AppDefaults.DefaultReasonBudgetMessage;
             sb.Append(" ").Append(ReasonBudgetMessageFlag)
               .Append(" \"").Append(msg.Replace("\"", "\\\"")).Append("\"");
+          }
+          else
+          {
+            // budget = 0 → не передаём ни budget, ни message (runtime unlimited).
           }
         }
       }
