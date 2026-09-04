@@ -17,6 +17,13 @@ namespace LlmScanHelper.Texts
     public const string ScanButton =
       "Перечитать дерево моделей. Параметры не сбрасываются — они восстанавливаются из хранилища.";
 
+    public const string SettingsButton =
+      "Настройки: корневые каталоги моделей (добавить/удалить/изменить). Открывается в\n"
+      + "отдельном окне поверх главного.";
+
+    public const string HelpButton =
+      "Справка: памятка «почему так» — объяснение решений по параметрам сборки.";
+
     public const string RefreshGpu =
       "Опросить llama-server --list-devices: свободная VRAM, авто-подстановка CUDA0/CUDA1...\n" +
       "Нужна для fit-target и оценки распределения слоёв. llama-server должен быть в PATH.\n" + ServerDoc;

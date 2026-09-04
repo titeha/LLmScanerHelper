@@ -86,7 +86,8 @@ namespace LlmScanHelper.Models.Settings
     public List<string> Catalogs { get; set; } = new();
     public int SelectedCatalogIndex { get; set; } = 0;
     public string LastModelPath { get; set; } = "";
-    public int SelectedTabIndex { get; set; } = 0;    // 0 = Панель, 1 = Памятка, 2 = Настройки
+    // Устарело: ранее индекс выбранной вкладки (табы убраны — окна теперь модальные).
+    // Значение по-прежнему сохраняется в settings.json ради совместимости.
 
     // Мостик для миграции из старых файлов (до нескольких каталогов), где корень
     // моделей хранился как строка ModelsRoot. После миграции обнуляется.

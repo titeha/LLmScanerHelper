@@ -201,9 +201,6 @@ namespace LlmScanHelper.ViewModels
     private string _layerEstimateText = "Оценка: модель не выбрана.";
     public string LayerEstimateText { get => _layerEstimateText; private set => Set(ref _layerEstimateText, value); }
 
-    private int _selectedTabIndex;
-    public int SelectedTabIndex { get => _selectedTabIndex; set { if (Set(ref _selectedTabIndex, value)) SaveSoon(); } }
-
     // ==================== Алиас ====================
 
     private string _aliasText = AppDefaults.DefaultAlias;

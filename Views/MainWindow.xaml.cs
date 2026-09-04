@@ -1,6 +1,8 @@
 using System.Windows;
+using System.Windows.Input;
 using LlmScanHelper.ViewModels;
 using MahApps.Metro.Controls;
+using MvvmUtilites;
 
 namespace LlmScanHelper.Views
 {
@@ -10,6 +12,11 @@ namespace LlmScanHelper.Views
     {
       InitializeComponent();
       DataContext = new MainViewModel();
+
+      // Кнопки в заголовке открывают модальные окна (Настройки/Справка),
+      // блокирующие главное до закрытия. Контент берётся из тех же UserControl.
+      OpenSettingsCommand = new RelayCommand(() => OpenSettings());
+      OpenHelpCommand = new RelayCommand(() => OpenHelp());
 
       // Инициализация после показа окна: сканирование моделей + восстановление последней
       Loaded += async (_, _) =>
@@ -32,6 +39,24 @@ namespace LlmScanHelper.Views
         if (DataContext is MainViewModel vm)
           vm.FlushPendingSave();
       };
+
+    }
+
+    // ==================== Поля команд в заголовке ====================
+
+    private RelayCommand? OpenSettingsCommand;
+    private RelayCommand? OpenHelpCommand;
+
+    private void OpenSettings()
+    {
+      var vm = DataContext as MainViewModel;
+      new SettingsWindow(vm).ShowDialog();
+    }
+
+    private void OpenHelp()
+    {
+      var vm = DataContext as MainViewModel;
+      new HelpWindow(vm).ShowDialog();
     }
   }
 }

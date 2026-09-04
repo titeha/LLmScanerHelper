@@ -50,7 +50,6 @@ namespace LlmScanHelper.ViewModels
       s.Catalogs = [.. Catalogs];
       s.SelectedCatalogIndex = Math.Max(0, Catalogs.IndexOf(SelectedCatalog));
       s.LastModelPath = _currentPath ?? "";
-      s.SelectedTabIndex = SelectedTabIndex;
       s.Global = SnapshotGlobal();
       s.ReasonBudgetMessages = ReasonBudgetMessages.ToList();
 
@@ -110,7 +109,6 @@ namespace LlmScanHelper.ViewModels
         if (ReasonBudgetMessages.Count == 0)
           ReasonBudgetMessages.Add(AppDefaults.DefaultReasonBudgetMessage);
 
-        SelectedTabIndex = Math.Clamp(_store.Settings.SelectedTabIndex, 0, 2);
       }
       finally { _suppressSave = false; }
     }
