@@ -409,8 +409,11 @@
                       <StackPanel Style="{StaticResource Row}">
                         <TextBlock Text="budget message:"
                                    Style="{StaticResource Lbl}" />
-                        <TextBox Width="480"
-                                 Text="{Binding ReasonBudgetMessage, UpdateSourceTrigger=PropertyChanged}"
+                        <!-- ТЗ1: общий список сообщений (все модели) + можно вписать новое -->
+                        <ComboBox Width="480"
+                                 IsEditable="True"
+                                 ItemsSource="{Binding ReasonBudgetMessages}"
+                                 Text="{Binding ReasonBudgetMessage, UpdateSourceTrigger=LostFocus}"
                                  VerticalContentAlignment="Center"
                                  IsEnabled="{Binding IsReasoningControlsEnabled}"
                                  ctrl:TextBoxHelpers.CommitOnEnter="True"

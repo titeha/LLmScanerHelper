@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using LlmScanHelper.Models;
 using LlmScanHelper.Texts;
 
@@ -120,11 +121,35 @@ namespace LlmScanHelper.ViewModels
       set { value = Math.Clamp(value, 0, 1_000_000); if (Set(ref _reasonBudget, value)) SaveSoon(); }
     }
 
+    // ТЗ1: общий список сообщений бюджета (settings.json, раздел ReasonBudgetMessages).
+    // Переиспользуется между моделями; ItemsSource редактируемого ComboBox.
+    public ObservableCollection<string> ReasonBudgetMessages { get; } = [];
+
+    private bool _suppressReasonMsgEdit;  // программная установка (загрузка профиля)
+
     private string _reasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
     public string ReasonBudgetMessage
     {
       get => _reasonBudgetMessage;
-      set { if (Set(ref _reasonBudgetMessage, value)) SaveSoon(); }
+      set
+      {
+        if (!Set(ref _reasonBudgetMessage, value))
+          return;
+        if (_suppressReasonMsgEdit)
+          return;
+        // Ручная правка/выбор: новое значение уходит в общий список (без дублей).
+        AddReasonBudgetMessage(value);
+        SaveSoon();
+      }
+    }
+
+    private void AddReasonBudgetMessage(string? value)
+    {
+      var v = value?.Trim() ?? "";
+      if (v.Length == 0)
+        return;
+      if (!ReasonBudgetMessages.Contains(v))
+        ReasonBudgetMessages.Add(v);
     }
 
     // --jinja: родной chat-шаблон GGUF (нужен для tool-calls/функций в OpenAI API).

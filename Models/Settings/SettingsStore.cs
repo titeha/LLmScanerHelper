@@ -95,6 +95,9 @@ namespace LlmScanHelper.Models.Settings
 
     public GlobalParams Global { get; set; } = new();
 
+    // ТЗ1: общий список сообщений бюджета reasoning (переиспользуется между моделями).
+    public List<string> ReasonBudgetMessages { get; set; } = [];
+
     public Dictionary<string, ModelSettings> PerModel { get; set; } =
       new(StringComparer.OrdinalIgnoreCase);
   }
@@ -146,10 +149,10 @@ namespace LlmScanHelper.Models.Settings
           // как единственный каталог, а мостиковое поле обнуляем.
           if (Settings.Catalogs.Count == 0)
           {
-            Settings.Catalogs = new List<string>
-            {
+            Settings.Catalogs =
+            [
               string.IsNullOrEmpty(Settings.ModelsRoot) ? AppDefaults.ModelsRoot : Settings.ModelsRoot
-            };
+            ];
             Settings.SelectedCatalogIndex = 0;
             Settings.ModelsRoot = null;
           }
