@@ -52,7 +52,7 @@ dotnet run -c Release
 | `Models/Settings/SettingsStore.cs` | JSON-хранилище (portable) |
 | `Texts/memo.md` | памятка «ПОЧЕМУ ТАК» (Markdown, вкладка «Памятка»; парсер — позже) |
 | `Texts/ToolTips.cs` | popup-подсказки по всем параметрам (зачем/влияет/дока) |
-| `Controls/TextBoxHelpers.cs` | attached-поведение: коммит TextBox по Enter |
+| `Controls/TextBoxHelpers.cs` | attached-поведение: коммит по Enter (TextBox / редактируемый ComboBox) |
 | `Controls/ToolTipLinker.cs` | кликабельные ссылки в тултипах (перехват «сквозного» клика) |
 | `Assets/app.ico` / `app-icon.png` | иконка приложения (exe и окно) |
 
@@ -66,6 +66,10 @@ dotnet run -c Release
 - **GPU**: для опроса `llama-server` должен быть доступен в `PATH`.
 - **MTP**: переключатель доступен, если в модели есть MTP/nextn-тензоры;
   инфо-панель показывает тип и число доп. токенов за шаг, если удалось распознать.
+- **Reasoning**: 3-режим (on/off/auto; дефолт нового профиля — auto — runtime решает
+  по чат-шаблону). Бюджет/сообщение активны при on и auto. Сообщение бюджета —
+  редактируемый ComboBox: общий список (все модели) или новый ввод; список живёт в
+  `settings.json` (раздел `ReasonBudgetMessages`).
 - **Инструменты (агентская работа)**: сканер оценивает поддержку tool-calls —
   сканирует все `tokenizer.chat_template*` на обработку `tools`/`tool_calls`
   и словарь на спец-токены вида `<tool_call>`. Вердикт (да/нет/неизвестно)
