@@ -154,9 +154,14 @@ namespace LlmScanHelper.ViewModels
         if (ReasoningMode != "off")
         {
           // ТЗ3: бюджет — только при значении > 0. 0 → не передаём (в runtime это unlimited).
-          if (ReasonBudget > 0)
+          // Но при режиме on и 0 бюджета используем минимальный бюджет (1024).
+          int budget = ReasonBudget;
+          if (ReasoningMode == "on" && budget == 0)
+            budget = AppDefaults.DefaultReasonBudgetMinimum;
+
+          if (budget > 0)
           {
-            sb.Append(" ").Append(ReasoningBudgetFlag).Append(" ").Append((long)ReasonBudget);
+            sb.Append(" ").Append(ReasoningBudgetFlag).Append(" ").Append((long)budget);
             // Сообщение — обязательно при budget > 0. Если поле пустое, ставим дефолт.
             var msg = ReasonBudgetMessage?.Trim();
             if (string.IsNullOrWhiteSpace(msg))
@@ -166,7 +171,7 @@ namespace LlmScanHelper.ViewModels
           }
           else
           {
-            // budget = 0 → не передаём ни budget, ни message (runtime unlimited).
+            // budget = 0 (только auto) → не передаём ни budget, ни message.
           }
         }
       }

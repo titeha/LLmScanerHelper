@@ -67,33 +67,33 @@ public class BuildCommandReasoningTests
   }
 
   [Fact]
-  public void On_BudgetZero_OmitsBothBudgetAndMessage()
+  public void On_BudgetZero_UsesDefaultMinimum_WithMessage()
   {
     var vm = CreateVm();
     vm.ReasoningMode = "on";
-    vm.ReasonBudget = 0;
+    vm.ReasonBudget = 0;  // режим on + 0 → дефолтный минимум 1024
     vm.ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
 
     string cmd = vm.BuildCommand(ModelPath);
 
     Assert.Contains("--reasoning on", cmd);
-    Assert.DoesNotContain(BudgetFlag, cmd);
-    Assert.DoesNotContain(MsgFlag, cmd);
+    Assert.Contains(BudgetFlag + "1024", cmd);
+    Assert.Contains(MsgFlag, cmd);
   }
 
   [Fact]
-  public void On_BudgetZero_MessageEmpty_OnlyReasoningOn()
+  public void On_BudgetZero_MessageEmpty_UsesDefaultMinimum_WithDefaultMessage()
   {
     var vm = CreateVm();
     vm.ReasoningMode = "on";
     vm.ReasonBudget = 0;
-    vm.ReasonBudgetMessage = "";
+    vm.ReasonBudgetMessage = "";  // пусто → дефолтный минимум + дефолтное сообщение
 
     string cmd = vm.BuildCommand(ModelPath);
 
     Assert.Contains("--reasoning on", cmd);
-    Assert.DoesNotContain(BudgetFlag, cmd);
-    Assert.DoesNotContain(MsgFlag, cmd);
+    Assert.Contains(BudgetFlag + "1024", cmd);
+    Assert.Contains(MsgFlag + "\"" + AppDefaults.DefaultReasonBudgetMessage + "\"", cmd);
   }
 
   // ==================== ТЗ2: режим off ====================

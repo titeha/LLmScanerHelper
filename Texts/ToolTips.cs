@@ -171,7 +171,8 @@ namespace LlmScanHelper.Texts
 
     public const string ReasonBudget =
       "Бюджет reasoning-токенов (флаг задаётся константой ReasoningBudgetFlag).\n" +
-      "0 — флаг не передаётся (дефолт runtime — -1, без лимита).\n" +
+      "0 — флаг не передаётся (runtime — без лимита), но при режиме on берётся минимальный\n" +
+      "бюджет 1024 (DefaultReasonBudgetMinimum).\n" +
       "Рекомендация: 4–8k в рутине, 16–32k в сложном коде.\n" +
       "Дока: " + ServerDoc;
 

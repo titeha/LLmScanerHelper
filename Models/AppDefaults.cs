@@ -47,6 +47,9 @@ namespace LlmScanHelper.Models
     public const string DefaultReasonBudgetMessage =
       "Your reasoning budget is exhausted. Provide your final answer now.";
 
+    // Минимальный бюджет reasoning при режиме on и значении 0 (1024 токена).
+    public const int DefaultReasonBudgetMinimum = 1024;
+
     // Ограничения парсера GGUF (защита от битых/злонамеренных файлов)
     public const ulong MaxTensorCount = 10_000_000;
     public const ulong MaxKvCount = 1_000_000;
