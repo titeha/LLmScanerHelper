@@ -389,10 +389,13 @@
                             Visibility="{Binding ReasoningAvailable, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
                       <StackPanel Style="{StaticResource Row}">
-                        <CheckBox Content="включить"
-                                  IsChecked="{Binding ReasoningChecked}"
+                        <TextBlock Text="reasoning:"
+                                   Style="{StaticResource Lbl}" />
+                        <ComboBox Width="90"
+                                  ItemsSource="{Binding ReasoningModeOptions}"
+                                  SelectedItem="{Binding ReasoningMode}"
                                   ToolTip="{x:Static t:ToolTips.Reasoning}" />
-                        <TextBlock Text="reasoning budget (0 → мин.):"
+                        <TextBlock Text="budget (0 → без лимита):"
                                    Style="{StaticResource Lbl}"
                                    Margin="12,0,6,0" />
                         <mah:NumericUpDown Width="100"
@@ -400,16 +403,19 @@
                                         Maximum="1000000"
                                         Interval="1024"
                                         Value="{Binding ReasonBudget}"
-                                        IsEnabled="{Binding ReasoningChecked}"
+                                        IsEnabled="{Binding IsReasoningControlsEnabled}"
                                         ToolTip="{x:Static t:ToolTips.ReasonBudget}" />
                       </StackPanel>
                       <StackPanel Style="{StaticResource Row}">
                         <TextBlock Text="budget message:"
                                    Style="{StaticResource Lbl}" />
-                        <TextBox Width="480"
-                                 Text="{Binding ReasonBudgetMessage, UpdateSourceTrigger=PropertyChanged}"
+                        <!-- ТЗ1: общий список сообщений (все модели) + можно вписать новое -->
+                        <ComboBox Width="480"
+                                 IsEditable="True"
+                                 ItemsSource="{Binding ReasonBudgetMessages}"
+                                 Text="{Binding ReasonBudgetMessage, UpdateSourceTrigger=LostFocus}"
                                  VerticalContentAlignment="Center"
-                                 IsEnabled="{Binding ReasoningChecked}"
+                                 IsEnabled="{Binding IsReasoningControlsEnabled}"
                                  ctrl:TextBoxHelpers.CommitOnEnter="True"
                                  ToolTip="{x:Static t:ToolTips.ReasonBudgetMessage}" />
                       </StackPanel>

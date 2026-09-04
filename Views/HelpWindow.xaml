@@ -1,0 +1,13 @@
+<mah:MetroWindow x:Class="LlmScanHelper.Views.HelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:views="clr-namespace:LlmScanHelper.Views"
+        Title="Почему так"
+        SizeToContent="WidthAndHeight"
+        MinWidth="760"
+        WindowStartupLocation="CenterOwner"
+        ShowTitleBar="True"
+        WindowTransitionsEnabled="False">
+    <views:MemoTabView />
+</mah:MetroWindow>

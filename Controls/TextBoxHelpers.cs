@@ -20,15 +20,21 @@ namespace LlmScanHelper.Controls
 
     private static void OnCommitOnEnterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-      if (d is not TextBox tb) return;
+      bool on = (bool)e.NewValue;
 
-      if ((bool)e.NewValue)
+      if (d is TextBox tb)
       {
-        tb.PreviewKeyDown += OnPreviewKeyDown;
+        if (on) tb.PreviewKeyDown += OnPreviewKeyDown;
+        else tb.PreviewKeyDown -= OnPreviewKeyDown;
+        return;
       }
-      else
+
+      // Редактируемый ComboBox: внутренний TextBox недоступен напрямую,
+      // ловим Enter на самом контроле и сдвигаем фокус (LostFocus-биндинг коммитит текст).
+      if (d is ComboBox cb)
       {
-        tb.PreviewKeyDown -= OnPreviewKeyDown;
+        if (on) cb.PreviewKeyDown += OnComboPreviewKeyDown;
+        else cb.PreviewKeyDown -= OnComboPreviewKeyDown;
       }
     }
 
@@ -37,6 +43,16 @@ namespace LlmScanHelper.Controls
       if (e.Key != Key.Enter || sender is not TextBox tb) return;
       e.Handled = true;
       tb.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+    }
+
+    private static void OnComboPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+      if (e.Key != Key.Enter || sender is not ComboBox cb) return;
+      // Даундроп открыт — даём стандартному поведению выбрать подсвеченный пункт.
+      if (cb.IsDropDownOpen)
+        return;
+      e.Handled = true;
+      cb.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
     }
   }
 }

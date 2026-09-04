@@ -17,6 +17,13 @@ namespace LlmScanHelper.Texts
     public const string ScanButton =
       "Перечитать дерево моделей. Параметры не сбрасываются — они восстанавливаются из хранилища.";
 
+    public const string SettingsButton =
+      "Настройки: корневые каталоги моделей (добавить/удалить/изменить). Открывается в\n"
+      + "отдельном окне поверх главного.";
+
+    public const string HelpButton =
+      "Справка: памятка «почему так» — объяснение решений по параметрам сборки.";
+
     public const string RefreshGpu =
       "Опросить llama-server --list-devices: свободная VRAM, авто-подстановка CUDA0/CUDA1...\n" +
       "Нужна для fit-target и оценки распределения слоёв. llama-server должен быть в PATH.\n" + ServerDoc;
@@ -158,17 +165,21 @@ namespace LlmScanHelper.Texts
       "Тип квантования KV-кэша спекулятивного (draft) контекста MTP.\n" + ServerDoc;
 
     public const string Reasoning =
-      "--reasoning on|off: явное управление режимом рассуждений (для thinking-моделей).\n" +
+      "--reasoning on|off|auto: режим рассуждений (для thinking-моделей).\n" +
+      "auto — runtime решает сам по чат-шаблону (дефолт); on — всегда включено; off — всегда выкл.\n" +
+      "Бюджет и сообщение доступны при on и auto (при off не передаются).\n" +
       "Детектится по чат-шаблону (enable_thinking/reasoning) и тегам GGUF.\n" + ServerDoc;
 
     public const string ReasonBudgetMessage =
       "--reasoning-budget-message: сообщение про исчерпание бюджета рассуждений.\n" +
-      "Передаётся обязательно вместе с бюджетом. По умолчанию — стандартный текст;\n" +
-      "можно вписать свой, при очищенном поле подставится стандартный.";
+      "Передаётся при непустом значении. Выбор из общего списка (все модели)\n" +
+      "или ввод нового текста (добавится в общий список). Дефолт — стандартный текст;\n" +
+      "при очищенном поле флаг не передаётся (дефолт runtime — none).";
 
     public const string ReasonBudget =
       "Бюджет reasoning-токенов (флаг задаётся константой ReasoningBudgetFlag).\n" +
-      "0 — подставляется минимальное значение (runtime не принимает 0, ошибка старта).\n" +
+      "0 — флаг не передаётся (runtime — без лимита), но при режиме on берётся минимальный\n" +
+      "бюджет 1024 (DefaultReasonBudgetMinimum).\n" +
       "Рекомендация: 4–8k в рутине, 16–32k в сложном коде.\n" +
       "Дока: " + ServerDoc;
 

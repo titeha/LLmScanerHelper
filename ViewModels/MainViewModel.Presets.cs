@@ -41,7 +41,7 @@ namespace LlmScanHelper.ViewModels
           MtpChecked = false;
         if (ReasoningAvailable)
         {
-          ReasoningChecked = true;
+          ReasoningMode = "on";
           ReasonBudget = Math.Min(4096, 1_000_000);
         }
       }

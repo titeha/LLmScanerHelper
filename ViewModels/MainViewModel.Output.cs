@@ -15,9 +15,6 @@ namespace LlmScanHelper.ViewModels
     // Имена флагов бюджета reasoning гуляют между билдами — правятся в ОДНОМ месте.
     private const string ReasoningBudgetFlag = "--reasoning-budget";
     private const string ReasonBudgetMessageFlag = "--reasoning-budget-message";
-    // Минимальный бюджет reasoning-токенов. runtime не принимает 0 (ошибка старта),
-    // поэтому при включённом reasoning 0 подставляется именно это значение.
-    private const int ReasonBudgetMin = 4096;
 
     // ==================== «Собрать команду» ====================
 
@@ -41,7 +38,8 @@ namespace LlmScanHelper.ViewModels
       CopyStatusText = "";
     }
 
-    private string BuildCommand(string modelPath)
+    // internal — для регрессионных тестов сборки команды (LLMScanHelper.Tests).
+    internal string BuildCommand(string modelPath)
     {
       var g = _gguf;
       if (g == null) return "(сначала выбери модель)";
@@ -147,19 +145,34 @@ namespace LlmScanHelper.ViewModels
 
       if (g.HasReasoning)
       {
-        sb.Append(" --reasoning ").Append(ReasoningChecked ? "on" : "off");
-        if (ReasoningChecked)
-        {
-          // runtime не принимает 0 — подставляем минимальное значение
-          var budget = ReasonBudget > 0 ? ReasonBudget : ReasonBudgetMin;
-          sb.Append(" ").Append(ReasoningBudgetFlag).Append(" ").Append((long)budget);
+        // ТЗ2: on → --reasoning on, off → --reasoning off, auto → флаг не передаём
+        // (дефолт runtime — auto, решает по чат-шаблону).
+        if (ReasoningMode == "on") sb.Append(" --reasoning on");
+        else if (ReasoningMode == "off") sb.Append(" --reasoning off");
 
-          // сообщение при исчерпании бюджета — обязательно вместе с бюджетом
-          var msg = string.IsNullOrWhiteSpace(ReasonBudgetMessage)
-            ? AppDefaults.DefaultReasonBudgetMessage
-            : ReasonBudgetMessage.Trim();
-          sb.Append(" ").Append(ReasonBudgetMessageFlag)
-            .Append(" \"").Append(msg.Replace("\"", "\\\"")).Append("\"");
+        // Бюджет и сообщение — при on и auto (не off).
+        if (ReasoningMode != "off")
+        {
+          // ТЗ3: бюджет — только при значении > 0. 0 → не передаём (в runtime это unlimited).
+          // Но при режиме on и 0 бюджета используем минимальный бюджет (1024).
+          int budget = ReasonBudget;
+          if (ReasoningMode == "on" && budget == 0)
+            budget = AppDefaults.DefaultReasonBudgetMinimum;
+
+          if (budget > 0)
+          {
+            sb.Append(" ").Append(ReasoningBudgetFlag).Append(" ").Append((long)budget);
+            // Сообщение — обязательно при budget > 0. Если поле пустое, ставим дефолт.
+            var msg = ReasonBudgetMessage?.Trim();
+            if (string.IsNullOrWhiteSpace(msg))
+              msg = AppDefaults.DefaultReasonBudgetMessage;
+            sb.Append(" ").Append(ReasonBudgetMessageFlag)
+              .Append(" \"").Append(msg.Replace("\"", "\\\"")).Append("\"");
+          }
+          else
+          {
+            // budget = 0 (только auto) → не передаём ни budget, ни message.
+          }
         }
       }
 

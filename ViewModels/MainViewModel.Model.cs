@@ -60,8 +60,10 @@ namespace LlmScanHelper.ViewModels
         MtpAvailable = false;
         MtpChecked = false;
         ReasoningAvailable = false;
-        ReasoningChecked = false;
+        ReasoningMode = AppDefaults.DefaultReasoningMode;
+        _suppressReasonMsgEdit = true;
         ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
+        _suppressReasonMsgEdit = false;
         JinjaChecked = false;
         JinjaAvailable = false;
         MmprojAvailable = false;
@@ -144,11 +146,15 @@ namespace LlmScanHelper.ViewModels
           DraftV = "q8_0";
 
         ReasoningAvailable = g.HasReasoning;
-        ReasoningChecked = g.HasReasoning && ms.ReasoningChecked;
+        ReasoningMode = ReasoningModeOptions.Contains(ms.ReasoningMode)
+          ? ms.ReasoningMode
+          : AppDefaults.DefaultReasoningMode;
         ReasonBudget = Math.Clamp(ms.ReasonBudget, 0, 1_000_000);
+        _suppressReasonMsgEdit = true;
         ReasonBudgetMessage = string.IsNullOrWhiteSpace(ms.ReasonBudgetMessage)
           ? AppDefaults.DefaultReasonBudgetMessage
           : ms.ReasonBudgetMessage;
+        _suppressReasonMsgEdit = false;
 
         // --jinja: авто по вердикту сканера; ручной выбор юзера имеет приоритет
         _suppressJinjaEdit = true;

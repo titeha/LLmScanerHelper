@@ -5,7 +5,7 @@
 sampling-параметры разработчика, сохранение профилей и оценка распределения слоёв.
 
 Прямой потомок LINQPad-скрипта v3: формулы и флаги перенесены 1:1,
-памятка «ПОЧЕМУ ТАК» доступна в приложении на вкладке **«Памятка (почему так)»**.
+памятка «ПОЧЕМУ ТАК» доступна в приложении в отдельном окне **«Справка (?)»** (кнопка в заголовке).
 
 ## Сборка и запуск
 
@@ -33,10 +33,11 @@ dotnet run -c Release
 
 | Файл | Назначение |
 |---|---|
-| `Views/MainWindow.xaml` | каркас окна: вкладки-контейнеры трёх представлений |
-| `Views/PanelTabView.xaml` | вкладка «Панель»: параметры, инфо, команда |
-| `Views/MemoTabView.xaml` | вкладка «Памятка» |
-| `Views/SettingsTabView.xaml` | вкладка «Настройки»: каталоги моделей |
+| `Views/MainWindow.xaml` | каркас окна: панель (PanelTabView) + кнопки в заголовке (Настройки/Справка) |
+| `Views/PanelTabView.xaml` | основной UserControl на главном окне: параметры, инфо, команда |
+| `Views/SettingsWindow.xaml` | отдельное окно «Настройки» (каталоги моделей), открывается из заголовка |
+| `Views/HelpWindow.xaml` | отдельное окно «Справка» (памятка «Почему так»), открывается из заголовка |
+| `Views/MemoTabView.xaml` | UserControl с памяткой «ПОЧЕМУ ТАК» (используется в HelpWindow) |
 | `ViewModels/MainViewModel.cs` | ядро: состояние, параметры, команды, сканирование |
 | `ViewModels/MainViewModel.Model.cs` | инфо о модели, загрузка, мультимодальность (mmproj) |
 | `ViewModels/MainViewModel.MtpReasoning.cs` | сервер (хост/порт), MTP, reasoning, jinja |
@@ -52,7 +53,7 @@ dotnet run -c Release
 | `Models/Settings/SettingsStore.cs` | JSON-хранилище (portable) |
 | `Texts/memo.md` | памятка «ПОЧЕМУ ТАК» (Markdown, вкладка «Памятка»; парсер — позже) |
 | `Texts/ToolTips.cs` | popup-подсказки по всем параметрам (зачем/влияет/дока) |
-| `Controls/TextBoxHelpers.cs` | attached-поведение: коммит TextBox по Enter |
+| `Controls/TextBoxHelpers.cs` | attached-поведение: коммит по Enter (TextBox / редактируемый ComboBox) |
 | `Controls/ToolTipLinker.cs` | кликабельные ссылки в тултипах (перехват «сквозного» клика) |
 | `Assets/app.ico` / `app-icon.png` | иконка приложения (exe и окно) |
 
@@ -66,6 +67,13 @@ dotnet run -c Release
 - **GPU**: для опроса `llama-server` должен быть доступен в `PATH`.
 - **MTP**: переключатель доступен, если в модели есть MTP/nextn-тензоры;
   инфо-панель показывает тип и число доп. токенов за шаг, если удалось распознать.
+- **Reasoning**: 3-режим (on/off/auto; дефолт нового профиля — auto — runtime решает
+  по чат-шаблону). Бюджет/сообщение активны при on и auto (при off — только `--reasoning off`).
+  При `on` и бюджете `0` используется минимальный бюджет 1024 токенов
+  (`--reasoning-budget 1024`); при `auto` и `0` — флаг не передаётся.
+  Сообщение бюджета —
+  редактируемый ComboBox: общий список (все модели) или новый ввод; список живёт в
+  `settings.json` (раздел `ReasonBudgetMessages`).
 - **Инструменты (агентская работа)**: сканер оценивает поддержку tool-calls —
   сканирует все `tokenizer.chat_template*` на обработку `tools`/`tool_calls`
   и словарь на спец-токены вида `<tool_call>`. Вердикт (да/нет/неизвестно)

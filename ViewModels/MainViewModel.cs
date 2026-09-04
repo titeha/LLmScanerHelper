@@ -4,6 +4,7 @@ using System.Windows.Threading;
 
 using LlmScanHelper.Models;
 using LlmScanHelper.Models.Settings;
+using LlmScanHelper.Views;
 using MvvmUtilites;
 
 namespace LlmScanHelper.ViewModels
@@ -23,9 +24,9 @@ namespace LlmScanHelper.ViewModels
   public sealed partial class MainViewModel : ObservableObject
   {
     private readonly SettingsStore _store = new();
-    private GgufInfo? _gguf;
+    internal GgufInfo? _gguf;              // internal — для регрессионных тестов
     private List<GpuDeviceInfo> _gpus = new();
-    private string? _currentPath;          // путь текущей модели (ключ по-модельного профиля)
+    internal string? _currentPath;         // путь текущей модели (ключ по-модельного профиля); internal — для тестов
     private bool _suppressSave;            // массовое применение — без сохранения
     private bool _suppressAliasEdit;       // программная установка алиаса
     private int _loadSeq;                  // защита от гонок при быстрой смене моделей
@@ -54,6 +55,21 @@ namespace LlmScanHelper.ViewModels
       AddCatalogCommand = new RelayCommand(AddCatalog);
       RemoveCatalogCommand = new RelayCommand(RemoveCatalog);
       EditCatalogCommand = new RelayCommand(EditCatalog);
+
+      OpenSettingsCommand = new RelayCommand(OpenSettings);
+      OpenHelpCommand = new RelayCommand(OpenHelp);
+    }
+
+    /// <summary>Открывает модальное окно настроек (блокирует главное до закрытия).</summary>
+    private void OpenSettings()
+    {
+      new SettingsWindow(this).ShowDialog();
+    }
+
+    /// <summary>Открывает модальное окно справки «Почему так» (блокирует главное до закрытия).</summary>
+    private void OpenHelp()
+    {
+      new HelpWindow(this).ShowDialog();
     }
 
     /// <summary>Вызывается из MainWindow после загрузки окна.</summary>
@@ -91,6 +107,8 @@ namespace LlmScanHelper.ViewModels
 
     public string[] KvOptions { get; } = { "f16", "q8_0", "q4_0" };
     public string[] FlashOptions { get; } = { "auto", "on", "off" };
+    // ТЗ2: режим рассуждений (значения совпадают с флагом --reasoning).
+    public string[] ReasoningModeOptions { get; } = { "auto", "on", "off" };
     public string[] ModeOptions { get; } = { "AUTO — llama.cpp --fit", "MANUAL — экспертный" };
     public string[] SplitModeOptions { get; } = { "layer", "row", "tensor", "none" };
 
@@ -199,9 +217,6 @@ namespace LlmScanHelper.ViewModels
     private string _layerEstimateText = "Оценка: модель не выбрана.";
     public string LayerEstimateText { get => _layerEstimateText; private set => Set(ref _layerEstimateText, value); }
 
-    private int _selectedTabIndex;
-    public int SelectedTabIndex { get => _selectedTabIndex; set { if (Set(ref _selectedTabIndex, value)) SaveSoon(); } }
-
     // ==================== Алиас ====================
 
     private string _aliasText = AppDefaults.DefaultAlias;
@@ -241,6 +256,8 @@ namespace LlmScanHelper.ViewModels
     public ICommand AddCatalogCommand { get; }
     public ICommand RemoveCatalogCommand { get; }
     public ICommand EditCatalogCommand { get; }
+    public ICommand OpenSettingsCommand { get; }
+    public ICommand OpenHelpCommand { get; }
 
     // ==================== Сканирование ====================
 

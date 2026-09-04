@@ -39,10 +39,16 @@ namespace LlmScanHelper.Models
     public const double DefaultFrequencyPenalty = 0.00;
     public const int DefaultSeed = -1;
 
-    // Сообщение про исчерпание бюджета рассуждений: передаётся в команду всегда
-    // вместе с бюджетом (требование runtime). Правится в интерфейсе.
+    // Режим рассуждений: auto (дефолт runtime — решать по чат-шаблону), on, off.
+    public const string DefaultReasoningMode = "auto";
+
+    // Сообщение про исчерпание бюджета рассуждений: передаётся при непустом
+    // значении; поле предзаполнено этим текстом. Правится в интерфейсе.
     public const string DefaultReasonBudgetMessage =
       "Your reasoning budget is exhausted. Provide your final answer now.";
+
+    // Минимальный бюджет reasoning при режиме on и значении 0 (1024 токена).
+    public const int DefaultReasonBudgetMinimum = 1024;
 
     // Ограничения парсера GGUF (защита от битых/злонамеренных файлов)
     public const ulong MaxTensorCount = 10_000_000;

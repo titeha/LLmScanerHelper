@@ -1,5 +1,6 @@
 using System.Windows.Threading;
 
+using LlmScanHelper.Models;
 using LlmScanHelper.Models.Settings;
 
 namespace LlmScanHelper.ViewModels
@@ -46,11 +47,11 @@ namespace LlmScanHelper.ViewModels
     public void SaveNow()
     {
       var s = _store.Settings;
-      s.Catalogs = new List<string>(Catalogs);
+      s.Catalogs = [.. Catalogs];
       s.SelectedCatalogIndex = Math.Max(0, Catalogs.IndexOf(SelectedCatalog));
       s.LastModelPath = _currentPath ?? "";
-      s.SelectedTabIndex = SelectedTabIndex;
       s.Global = SnapshotGlobal();
+      s.ReasonBudgetMessages = ReasonBudgetMessages.ToList();
 
       if (_currentPath != null)
       {
@@ -100,7 +101,14 @@ namespace LlmScanHelper.ViewModels
         FrequencyPenalty = Math.Clamp(gp.FrequencyPenalty, -2, 2);
         Seed = gp.Seed;
 
-        SelectedTabIndex = Math.Clamp(_store.Settings.SelectedTabIndex, 0, 2);
+        // ТЗ1: общий список сообщений бюджета; пустой список сидится стандартным текстом,
+        // чтобы предзаполненное поле было валидным пунктом ComboBox.
+        ReasonBudgetMessages.Clear();
+        foreach (var msg in _store.Settings.ReasonBudgetMessages)
+          ReasonBudgetMessages.Add(msg);
+        if (ReasonBudgetMessages.Count == 0)
+          ReasonBudgetMessages.Add(AppDefaults.DefaultReasonBudgetMessage);
+
       }
       finally { _suppressSave = false; }
     }
@@ -154,7 +162,7 @@ namespace LlmScanHelper.ViewModels
       ms.DraftP = DraftP;
       ms.DraftK = DraftK;
       ms.DraftV = DraftV;
-      ms.ReasoningChecked = ReasoningChecked;
+      ms.ReasoningMode = ReasoningMode;
       ms.ReasonBudget = ReasonBudget;
       ms.ReasonBudgetMessage = ReasonBudgetMessage;
       ms.UseJinja = JinjaChecked;   // ms.JinjaEdited — только из сеттера (ручная правка)

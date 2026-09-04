@@ -62,7 +62,11 @@ namespace LlmScanHelper.Models.Settings
     public string DraftK { get; set; } = "q8_0";
     public string DraftV { get; set; } = "q8_0";
 
-    public bool ReasoningChecked { get; set; } = true;
+    // ТЗ2: режим рассуждений on/off/auto (ранее bool ReasoningChecked).
+    public string ReasoningMode { get; set; } = AppDefaults.DefaultReasoningMode;
+    // Мостик миграции из старых файлов (bool). После миграции в ReasoningMode — null.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? ReasoningChecked { get; set; }
     public int ReasonBudget { get; set; } = 4096;
     public string ReasonBudgetMessage { get; set; } = "";   // пусто = дефолт из AppDefaults
 
@@ -82,7 +86,8 @@ namespace LlmScanHelper.Models.Settings
     public List<string> Catalogs { get; set; } = new();
     public int SelectedCatalogIndex { get; set; } = 0;
     public string LastModelPath { get; set; } = "";
-    public int SelectedTabIndex { get; set; } = 0;    // 0 = Панель, 1 = Памятка, 2 = Настройки
+    // Устарело: ранее индекс выбранной вкладки (табы убраны — окна теперь модальные).
+    // Значение по-прежнему сохраняется в settings.json ради совместимости.
 
     // Мостик для миграции из старых файлов (до нескольких каталогов), где корень
     // моделей хранился как строка ModelsRoot. После миграции обнуляется.
@@ -90,6 +95,9 @@ namespace LlmScanHelper.Models.Settings
     public string? ModelsRoot { get; set; }
 
     public GlobalParams Global { get; set; } = new();
+
+    // ТЗ1: общий список сообщений бюджета reasoning (переиспользуется между моделями).
+    public List<string> ReasonBudgetMessages { get; set; } = [];
 
     public Dictionary<string, ModelSettings> PerModel { get; set; } =
       new(StringComparer.OrdinalIgnoreCase);
@@ -112,11 +120,15 @@ namespace LlmScanHelper.Models.Settings
 
     public string FilePath { get; }
 
-    public SettingsStore()
+    public SettingsStore() : this(Path.Combine(AppContext.BaseDirectory, "settings.json"))
     {
       // JSON рядом с exe — переносимый режим
-      string dir = AppContext.BaseDirectory;
-      FilePath = Path.Combine(dir, "settings.json");
+    }
+
+    // internal — для тестов миграции настроек из старых файлов.
+    internal SettingsStore(string filePath)
+    {
+      FilePath = filePath;
     }
 
     public void Load()
@@ -138,12 +150,23 @@ namespace LlmScanHelper.Models.Settings
           // как единственный каталог, а мостиковое поле обнуляем.
           if (Settings.Catalogs.Count == 0)
           {
-            Settings.Catalogs = new List<string>
-            {
+            Settings.Catalogs =
+            [
               string.IsNullOrEmpty(Settings.ModelsRoot) ? AppDefaults.ModelsRoot : Settings.ModelsRoot
-            };
+            ];
             Settings.SelectedCatalogIndex = 0;
             Settings.ModelsRoot = null;
+          }
+
+          // Миграция ТЗ2: старые файлы хранили ReasoningChecked (bool). Переносим
+          // в ReasoningMode (true → on, false → off) и обнуляем мостик.
+          foreach (var ms in Settings.PerModel.Values)
+          {
+            if (ms.ReasoningChecked.HasValue)
+            {
+              ms.ReasoningMode = ms.ReasoningChecked.Value ? "on" : "off";
+              ms.ReasoningChecked = null;
+            }
           }
         }
       }

@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:views="clr-namespace:LlmScanHelper.Views"
+        xmlns:t="clr-namespace:LlmScanHelper.Texts"
         Title="LLM Scan Helper"
         Width="1400"
         Height="900"
@@ -18,25 +19,38 @@
         Icon="pack://application:,,,/Assets/app-icon.png"
         WindowTransitionsEnabled="False">
 
-  <TabControl SelectedIndex="{Binding SelectedTabIndex}">
+  <!-- Основная логика (скан, выбор модели, GPU, сборка команды) живёт в UserControl,
+       прикреплённом к главному окну. -->
+  <views:PanelTabView />
 
-    <!-- ==================== ВКЛАДКА: ПАНЕЛЬ ==================== -->
-    <TabItem Header="Панель"
-             mah:ControlsHelper.ContentCharacterCasing="Normal">
-      <views:PanelTabView />
-    </TabItem>
-
-    <!-- ==================== ВКЛАДКА: ПАМЯТКА ==================== -->
-    <TabItem Header="Памятка (почему так)"
-             mah:ControlsHelper.ContentCharacterCasing="Normal">
-      <views:MemoTabView />
-    </TabItem>
-
-    <!-- ==================== ВКЛАДКА: НАСТРОЙКИ ==================== -->
-    <TabItem Header="Настройки"
-             mah:ControlsHelper.ContentCharacterCasing="Normal">
-      <views:SettingsTabView />
-    </TabItem>
-
-  </TabControl>
+  <mah:MetroWindow.RightWindowCommands>
+    <mah:WindowCommands mah:ControlsHelper.ContentCharacterCasing="Normal">
+      <Button Command="{Binding OpenSettingsCommand}"
+              Padding="4"
+              HorizontalContentAlignment="Center"
+              VerticalContentAlignment="Center"
+              ToolTip="{x:Static t:ToolTips.SettingsButton}"
+              Width="28" Height="28">
+        <!-- Иконка — в Assets/Icons.xaml (StaticResource), здесь только оформление. -->
+        <Path Width="20" Height="20" Stretch="Uniform"
+              Fill="Transparent"
+              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+              StrokeThickness="1.5" StrokeLineJoin="Round"
+              Data="{StaticResource SettingsGear}" />
+      </Button>
+      <Button Command="{Binding OpenHelpCommand}"
+              Padding="4"
+              HorizontalContentAlignment="Center"
+              VerticalContentAlignment="Center"
+              ToolTip="{x:Static t:ToolTips.HelpButton}"
+              Width="28" Height="28">
+        <!-- Иконка — в Assets/Icons.xaml (StaticResource), здесь только оформление. -->
+        <Path Width="20" Height="20" Stretch="Uniform"
+              Fill="Transparent"
+              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+              StrokeThickness="1.5" StrokeLineJoin="Round"
+              Data="{StaticResource HelpBang}" />
+      </Button>
+    </mah:WindowCommands>
+  </mah:MetroWindow.RightWindowCommands>
 </mah:MetroWindow>

@@ -52,3 +52,9 @@ settings.json.bad
 # Агентские рабочие папки
 .qwen/
 .pi/
+
+# Pix Agent
+.pi/
+.pi-lens/
+
+.cache/
