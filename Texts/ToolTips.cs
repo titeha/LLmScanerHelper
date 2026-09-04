@@ -34,6 +34,9 @@ namespace LlmScanHelper.Texts
       "Регистр сохраняется как в имени файла (GPT, UD и аббревиатуры не трогаются).\n" +
       "Изменённый вручную алиас запоминается для модели и не перегенерируется.\n" + ServerDoc;
 
+    public const string CopyAlias =
+      "Копировать алиас в буфер обмена.";
+
     public const string ToolsDetect =
       "Эвристика «умеет ли модель tool-calls» (агентная работа) по GGUF:\n" +
       "1) скан всех ключей tokenizer.chat_template* — есть ли в jinja-шаблоне\n" +

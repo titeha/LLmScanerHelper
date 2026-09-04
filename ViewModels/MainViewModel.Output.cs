@@ -349,6 +349,25 @@ namespace LlmScanHelper.ViewModels
       }
     }
 
+    private void CopyAliasToClipboard()
+    {
+      if (string.IsNullOrWhiteSpace(AliasText))
+      {
+        ShowCopyStatus("Пустой алиас — нечего копировать");
+        return;
+      }
+
+      try
+      {
+        Clipboard.SetText(AliasText);
+        ShowCopyStatus("Алиас скопирован ✓");
+      }
+      catch
+      {
+        ShowCopyStatus("Не удалось скопировать — буфер занят другой программой");
+      }
+    }
+
     private void ShowCopyStatus(string text)
     {
       CopyStatusText = text;

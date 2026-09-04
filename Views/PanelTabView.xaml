@@ -49,11 +49,22 @@
                 <StackPanel Style="{StaticResource Row}">
                   <TextBlock Text="Model alias (--alias):"
                              Style="{StaticResource Lbl}" />
+                  <!-- Батоновый TextBox: кнопка «копировать» повешена через TextBoxHelper. -->
                   <TextBox Width="360"
+                           Style="{StaticResource ButtonTextBox}"
                            Text="{Binding AliasText, UpdateSourceTrigger=PropertyChanged}"
                            VerticalContentAlignment="Center"
+                           Margin="0,0,32,0"
                            ctrl:TextBoxHelpers.CommitOnEnter="True"
-                           ToolTip="{x:Static t:ToolTips.Alias}" />
+                           ToolTip="{x:Static t:ToolTips.Alias}"
+                           mah:TextBoxHelper.ButtonCommand="{Binding CopyAliasCommand}">
+                    <mah:TextBoxHelper.ButtonContent>
+                      <Path Data="{StaticResource CopyClipboard}"
+                            Width="18" Height="18"
+                            Stretch="Uniform"
+                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TextBox}}" />
+                    </mah:TextBoxHelper.ButtonContent>
+                  </TextBox>
                   <TextBlock Text="регистр сохраняется (GPT, UD — не трогаются)"
                              Style="{StaticResource HintText}"
                              Margin="10,0,0,0"

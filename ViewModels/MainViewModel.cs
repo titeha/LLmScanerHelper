@@ -43,6 +43,7 @@ namespace LlmScanHelper.ViewModels
       RefreshGpusCommand = new AsyncRelayCommand(RefreshGpusAsync);
       BuildCommandCommand = new RelayCommand(BuildOutputs);
       CopyCommandCommand = new RelayCommand(CopyToClipboard);
+      CopyAliasCommand = new RelayCommand(CopyAliasToClipboard);
 
       PresetV100OnlyCommand = new RelayCommand(() => ApplyBaseAuto(AppDefaults.SafeReserveRtxGiB, PresetDevices.V100Only));
       PresetRtxOnlyCommand = new RelayCommand(ApplyPresetRtxOnly);
@@ -246,6 +247,7 @@ namespace LlmScanHelper.ViewModels
     public ICommand RefreshGpusCommand { get; }
     public ICommand BuildCommandCommand { get; }
     public ICommand CopyCommandCommand { get; }
+    public ICommand CopyAliasCommand { get; }
     public ICommand PresetV100OnlyCommand { get; }
     public ICommand PresetRtxOnlyCommand { get; }
     public ICommand PresetSafeCommand { get; }
