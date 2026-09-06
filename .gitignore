@@ -2,6 +2,8 @@
 # .NET / Visual Studio
 bin/
 obj/
+# Артефакты сборки (Directory.Build.props -> ArtifactsPath)
+artifacts/
 *.user
 *.suo
 *.userosscache

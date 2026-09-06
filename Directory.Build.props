@@ -1,0 +1,9 @@
+<!-- Все артефакты сборки (bin + obj) складываем в artifacts/, чтобы не загромождать исходники.
+     Техника как в LzmaSharp: UseArtifactsOutput перенаправляет и выходную папку, и obj.
+     Заодно уходит предупреждение про кастомный BaseIntermediateOutputPath. -->
+<Project>
+  <PropertyGroup>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+  </PropertyGroup>
+</Project>

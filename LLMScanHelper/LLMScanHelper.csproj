@@ -15,8 +15,7 @@
     <!-- Не тащим спутниковые локализации для всех культур -->
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
-    <!-- Итоговый exe (папка bin) — в корне решения, а не в папке проекта: так его проще найти и запустить. -->
-    <OutDir>$(MSBuildProjectDirectory)\..\bin\</OutDir>
+    <!-- Артефакты сборки (bin + obj) — в корневом artifacts/ (Directory.Build.props), а не в папках проекта. -->
   </PropertyGroup>
 
   <ItemGroup>
