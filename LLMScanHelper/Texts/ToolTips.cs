@@ -24,6 +24,9 @@ namespace LlmScanHelper.Texts
     public const string HelpButton =
       "Справка: памятка «почему так» — объяснение решений по параметрам сборки.";
 
+    public const string ScanGGUF =
+      "Сканировать GGUF";
+
     public const string RefreshGpu =
       "Опросить llama-server --list-devices: свободная VRAM, авто-подстановка CUDA0/CUDA1...\n" +
       "Нужна для fit-target и оценки распределения слоёв. llama-server должен быть в PATH.\n" + ServerDoc;

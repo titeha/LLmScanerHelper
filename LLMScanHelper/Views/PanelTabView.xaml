@@ -11,10 +11,6 @@
         <StackPanel DockPanel.Dock="Top"
                     Margin="10,8,10,2">
           <StackPanel Orientation="Horizontal">
-            <Button Content="Сканировать GGUF"
-                    Command="{Binding ScanCommand}"
-                    Padding="10,3"
-                    ToolTip="{x:Static t:ToolTips.ScanButton}" />
             <Button Content="Обновить GPU"
                     Command="{Binding RefreshGpusCommand}"
                     Margin="6,0,0,0"
@@ -27,6 +23,22 @@
                       ItemsSource="{Binding Models}"
                       SelectedItem="{Binding SelectedModel}"
                       ToolTip="{x:Static t:ToolTips.ModelCombo}" />
+            <!-- Компактная кнопка сканирования рядом с ComboBox моделей.
+                 Логика — та же ScanCommand (см. MainViewModel). -->
+            <Button Padding="4"
+                    Width="28" Height="28"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding ScanCommand}"
+                    ToolTip="{x:Static t:ToolTips.ScanGGUF}">
+              <!-- Иконка — в Assets/Icons.xaml (StaticResource), здесь только оформление. -->
+              <Path Width="18" Height="18"
+                    Stretch="Uniform"
+                    Fill="Transparent"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                    StrokeThickness="1.5" StrokeLineJoin="Round"
+                    Data="{StaticResource ScanMagnifier}" />
+            </Button>
           </StackPanel>
           <TextBlock Text="{Binding StatusText}"
                      Foreground="DarkBlue"
