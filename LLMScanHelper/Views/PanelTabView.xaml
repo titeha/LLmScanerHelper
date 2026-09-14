@@ -627,15 +627,17 @@
             <StackPanel>
 
               <GroupBox Header="Информация о модели">
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="135" />
-                    <ColumnDefinition Width="*" />
-                  </Grid.ColumnDefinitions>
-                  <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
+                   <Grid.RowDefinitions>
+                     <RowDefinition />
+                     <RowDefinition />
+                     <RowDefinition />
+                     <RowDefinition />
+                     <RowDefinition />
+                     <RowDefinition />
+                     <RowDefinition />
+                     <RowDefinition /> <!-- File name -->
+                     <RowDefinition /> <!-- Quantization -->
+                   </Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
@@ -649,15 +651,31 @@
                       <Setter Property="VerticalAlignment"
                               Value="Center" />
                     </Style>
-                  </Grid.Resources>
-                  <TextBlock Grid.Row="0"
-                             Grid.Column="0"
-                             Text="Архитектура:"
-                             FontWeight="SemiBold" />
-                  <TextBlock Grid.Row="0"
-                             Grid.Column="1"
-                             Text="{Binding InfoArch}" />
-                  <TextBlock Grid.Row="1"
+                   <TextBlock Grid.Row="6"
+                              Grid.Column="0"
+                              Text="Инструменты:"
+                              FontWeight="SemiBold"
+                              ToolTip="{Binding InfoToolsTooltip}" />
+                   <TextBlock Grid.Row="6"
+                              Grid.Column="1"
+                              Text="{Binding InfoTools}"
+                              ToolTip="{Binding InfoToolsTooltip}" />
+                   <!-- Файл модели -->
+                   <TextBlock Grid.Row="7"
+                              Grid.Column="0"
+                              Text="Файл:"
+                              FontWeight="SemiBold" />
+                   <TextBlock Grid.Row="7"
+                              Grid.Column="1"
+                              Text="{Binding InfoFileName}" />
+                   <!-- Квантование -->
+                   <TextBlock Grid.Row="8"
+                              Grid.Column="0"
+                              Text="Квантование:"
+                              FontWeight="SemiBold" />
+                   <TextBlock Grid.Row="8"
+                              Grid.Column="1"
+                              Text="{Binding InfoQuantization}" />
                              Grid.Column="0"
                              Text="Блоков:"
                              FontWeight="SemiBold" />

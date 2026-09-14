@@ -43,6 +43,12 @@ namespace LlmScanHelper.ViewModels
 
     private string _infoReasoning = "-";
     public string InfoReasoning { get => _infoReasoning; private set => Set(ref _infoReasoning, value); }
+    // Новые свойства для имени файла и квантования
+    private string _infoFileName = "-";
+    public string InfoFileName { get => _infoFileName; private set => Set(ref _infoFileName, value); }
+
+    private string _infoQuantization = "-";
+    public string InfoQuantization { get => _infoQuantization; private set => Set(ref _infoQuantization, value); }
 
     // ==================== Загрузка модели ====================
 
@@ -195,12 +201,14 @@ namespace LlmScanHelper.ViewModels
         InfoMtp = FormatInfoMtp(g);
         InfoMultimodal = MmprojAvailable ? "да" : "нет";
         InfoReasoning = g.HasReasoning ? "да" : "нет";
-
+        // Добавляем имя файла и квантование
+        InfoFileName = m.FileName;
+        InfoQuantization = KvK; // квантование K
         StatusText = $"Загружено: {m.FileName}" +
-               $" | MTP: {(g.HasMtp ? "да" : "нет")}" +
-               $" | reasoning: {(g.HasReasoning ? "да" : "нет")}" +
-               $" | tools: {(g.ToolSupport == ToolSupportKind.Yes ? "да" : g.ToolSupport == ToolSupportKind.No ? "нет" : "?")}" +
-               (MmprojAvailable ? " | mmproj: да" : "");
+                $" | MTP: {(g.HasMtp ? "да" : "нет")}" +
+                $" | reasoning: {(g.HasReasoning ? "да" : "нет")}" +
+                $" | tools: {(g.ToolSupport == ToolSupportKind.Yes ? "да" : g.ToolSupport == ToolSupportKind.No ? "нет" : "?")}" +
+                (MmprojAvailable ? " | mmproj: да" : "");
       }
       finally
       {
