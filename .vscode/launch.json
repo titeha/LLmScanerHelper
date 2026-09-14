@@ -6,7 +6,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build (Debug)",
-      "program": "${workspaceFolder}/bin/Debug/net10.0-windows/LLMScanHelper.exe",
+      "program": "${workspaceFolder}/artifacts/bin/LLMScanHelper/debug/LLMScanHelper.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
       "stopAtEntry": false,
