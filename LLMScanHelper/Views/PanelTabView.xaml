@@ -484,10 +484,6 @@
                               IsEnabled="{Binding MmprojAvailable}"
                               ToolTip="{x:Static t:ToolTips.MmprojCombo}" />
                   </StackPanel>
-                  <TextBlock Text="{Binding MmprojInfoText}"
-                             Foreground="DarkGreen"
-                             Margin="0,4,0,0"
-                             ToolTip="{x:Static t:ToolTips.MmprojEnabled}" />
                 </StackPanel>
               </GroupBox>
 
