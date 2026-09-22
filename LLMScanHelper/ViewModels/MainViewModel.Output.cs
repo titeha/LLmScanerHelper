@@ -269,7 +269,7 @@ namespace LlmScanHelper.ViewModels
 
       string fn = SelectedModel?.DisplayName ?? "";
       if (fn.IndexOf("Q8", StringComparison.OrdinalIgnoreCase) >= 0)
-        w.Add("Q8 — кандидат на CPU offload в твоей текущей паре 16+6 GB. Для агента обязательно сравни Q6/Q4 на той же задаче: меньший квант может оказаться не только быстрее, но и фактически полезнее.");
+        w.Add("Q8 — кандидат на CPU offload в твоей текущей паре 16+12 GB (V100 + RTX 3060). Для агента обязательно сравни Q6/Q4 на той же задаче: меньший квант может оказаться не только быстрее, но и фактически полезнее.");
 
       if (UBatch > Batch)
         w.Add("ubatch не должен быть больше batch. Уменьши -ub или увеличь -b.");
