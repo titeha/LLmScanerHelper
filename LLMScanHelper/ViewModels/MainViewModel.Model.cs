@@ -204,11 +204,6 @@ namespace LlmScanHelper.ViewModels
         // Добавляем имя файла и квантование
         InfoFileName = m.FileName;
         InfoQuantization = KvK; // квантование K
-        StatusText = $"Загружено: {m.FileName}" +
-                $" | MTP: {(g.HasMtp ? "да" : "нет")}" +
-                $" | reasoning: {(g.HasReasoning ? "да" : "нет")}" +
-                $" | tools: {(g.ToolSupport == ToolSupportKind.Yes ? "да" : g.ToolSupport == ToolSupportKind.No ? "нет" : "?")}" +
-                (MmprojAvailable ? " | mmproj: да" : "");
       }
       finally
       {

@@ -40,10 +40,16 @@
                     Data="{StaticResource ScanMagnifier}" />
             </Button>
           </StackPanel>
-          <TextBlock Text="{Binding StatusText}"
-                     Foreground="DarkBlue"
-                     Margin="0,6,0,0" />
         </StackPanel>
+
+        <!-- Строка состояния: статусы и ошибки -->
+        <StatusBar DockPanel.Dock="Bottom">
+          <StatusBarItem>
+            <TextBlock Text="{Binding StatusText}"
+                       Foreground="DarkBlue"
+                       TextWrapping="Wrap" />
+          </StatusBarItem>
+        </StatusBar>
 
         <Grid Margin="10,6,10,8">
           <Grid.ColumnDefinitions>
@@ -626,8 +632,14 @@
                         Grid.Column="1">
             <StackPanel>
 
-              <GroupBox Header="Информация о модели">
+               <GroupBox Header="Информация о модели">
+                 <Grid>
+                   <Grid.ColumnDefinitions>
+                     <ColumnDefinition Width="135" />
+                     <ColumnDefinition Width="*" />
+                   </Grid.ColumnDefinitions>
                    <Grid.RowDefinitions>
+                     <RowDefinition />
                      <RowDefinition />
                      <RowDefinition />
                      <RowDefinition />
@@ -638,101 +650,53 @@
                      <RowDefinition /> <!-- File name -->
                      <RowDefinition /> <!-- Quantization -->
                    </Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                  </Grid.RowDefinitions>
-                  <Grid.Resources>
+                   <Grid.Resources>
                     <Style TargetType="TextBlock">
                       <Setter Property="Margin"
                               Value="0,2,6,2" />
                       <Setter Property="VerticalAlignment"
                               Value="Center" />
                     </Style>
-                   <TextBlock Grid.Row="6"
-                              Grid.Column="0"
-                              Text="Инструменты:"
-                              FontWeight="SemiBold"
-                              ToolTip="{Binding InfoToolsTooltip}" />
-                   <TextBlock Grid.Row="6"
-                              Grid.Column="1"
-                              Text="{Binding InfoTools}"
-                              ToolTip="{Binding InfoToolsTooltip}" />
-                   <!-- Файл модели -->
-                   <TextBlock Grid.Row="7"
-                              Grid.Column="0"
-                              Text="Файл:"
-                              FontWeight="SemiBold" />
-                   <TextBlock Grid.Row="7"
-                              Grid.Column="1"
-                              Text="{Binding InfoFileName}" />
-                   <!-- Квантование -->
-                   <TextBlock Grid.Row="8"
-                              Grid.Column="0"
-                              Text="Квантование:"
-                              FontWeight="SemiBold" />
-                   <TextBlock Grid.Row="8"
-                              Grid.Column="1"
-                              Text="{Binding InfoQuantization}" />
-                             Grid.Column="0"
-                             Text="Блоков:"
-                             FontWeight="SemiBold" />
-                  <TextBlock Grid.Row="1"
-                             Grid.Column="1"
-                             Text="{Binding InfoBlocks}" />
-                  <TextBlock Grid.Row="2"
-                             Grid.Column="0"
-                             Text="Макс ctx:"
-                             FontWeight="SemiBold" />
-                  <TextBlock Grid.Row="2"
-                             Grid.Column="1"
-                             Text="{Binding InfoMaxCtx}" />
-                  <TextBlock Grid.Row="3"
-                             Grid.Column="0"
-                             Text="GGUF:"
-                             FontWeight="SemiBold" />
-                  <TextBlock Grid.Row="3"
-                             Grid.Column="1"
-                             Text="{Binding InfoFileSize}" />
-                  <TextBlock Grid.Row="4"
-                             Grid.Column="0"
-                             Text="MTP:"
-                             FontWeight="SemiBold"
-                             ToolTip="{x:Static t:ToolTips.MtpInfoRow}" />
-                  <TextBlock Grid.Row="4"
-                             Grid.Column="1"
-                             Text="{Binding InfoMtp}"
-                             TextWrapping="Wrap"
-                             ToolTip="{x:Static t:ToolTips.MtpInfoRow}" />
-                  <TextBlock Grid.Row="5"
-                             Grid.Column="0"
-                             Text="Мультимодальность:"
-                             FontWeight="SemiBold"
-                             ToolTip="{x:Static t:ToolTips.MultimodalRow}" />
-                  <TextBlock Grid.Row="5"
-                             Grid.Column="1"
-                             Text="{Binding InfoMultimodal}"
-                             ToolTip="{x:Static t:ToolTips.MultimodalRow}" />
-                  <TextBlock Grid.Row="6"
-                             Grid.Column="0"
-                             Text="Рассуждения:"
-                             FontWeight="SemiBold"
-                             ToolTip="{x:Static t:ToolTips.ReasoningRow}" />
-                  <TextBlock Grid.Row="6"
-                             Grid.Column="1"
-                             Text="{Binding InfoReasoning}"
-                             ToolTip="{x:Static t:ToolTips.ReasoningRow}" />
-                  <TextBlock Grid.Row="7"
-                             Grid.Column="0"
-                             Text="Инструменты:"
-                             FontWeight="SemiBold"
-                             ToolTip="{Binding InfoToolsTooltip}" />
-                  <TextBlock Grid.Row="7"
-                             Grid.Column="1"
-                             Text="{Binding InfoTools}"
-                             ToolTip="{Binding InfoToolsTooltip}" />
+                    </Grid.Resources>
+                    <!-- Архитектура -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Архитектура:" FontWeight="SemiBold" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding InfoArch}" />
+
+                    <!-- Блоков -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Блоков:" FontWeight="SemiBold" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding InfoBlocks}" />
+
+                    <!-- Макс ctx -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Макс ctx:" FontWeight="SemiBold" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding InfoMaxCtx}" />
+
+                    <!-- GGUF -->
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="GGUF:" FontWeight="SemiBold" />
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding InfoFileSize}" />
+
+                    <!-- MTP -->
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="MTP:" FontWeight="SemiBold" ToolTip="{x:Static t:ToolTips.MtpInfoRow}" />
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding InfoMtp}" TextWrapping="Wrap" ToolTip="{x:Static t:ToolTips.MtpInfoRow}" />
+
+                    <!-- Мультимодальность -->
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Мультимодальность:" FontWeight="SemiBold" ToolTip="{x:Static t:ToolTips.MultimodalRow}" />
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding InfoMultimodal}" ToolTip="{x:Static t:ToolTips.MultimodalRow}" />
+
+                    <!-- Рассуждения -->
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Рассуждения:" FontWeight="SemiBold" ToolTip="{x:Static t:ToolTips.ReasoningRow}" />
+                    <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding InfoReasoning}" ToolTip="{x:Static t:ToolTips.ReasoningRow}" />
+
+                    <!-- Инструменты -->
+                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Инструменты:" FontWeight="SemiBold" ToolTip="{Binding InfoToolsTooltip}" />
+                    <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding InfoTools}" ToolTip="{Binding InfoToolsTooltip}" />
+
+                    <!-- Файл модели -->
+                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Файл:" FontWeight="SemiBold" />
+                    <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding InfoFileName}" />
+
+                    <!-- Квантование -->
+                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Квантование:" FontWeight="SemiBold" />
+                    <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding InfoQuantization}" />
                 </Grid>
               </GroupBox>
 
