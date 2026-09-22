@@ -55,8 +55,8 @@ settings.json.bad
 .qwen/
 .pi/
 
-# Pix Agent
-.pi/
-.pi-lens/
-
 .cache/
+
+.serena/
+
+.agent/
