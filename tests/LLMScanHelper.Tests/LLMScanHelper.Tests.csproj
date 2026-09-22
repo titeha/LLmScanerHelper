@@ -18,6 +18,7 @@
   <ItemGroup>
     <!-- Основной проект теперь лежит в папке LLMScanHelper\ (из tests\LLMScanHelper.Tests\ -> ..\..\LLMScanHelper\). -->
     <ProjectReference Include="..\..\LLMScanHelper\LLMScanHelper.csproj" />
+    <ProjectReference Include="..\..\Core\LlmScanHelper.Core\LlmScanHelper.Core.csproj" />
   </ItemGroup>
 
 </Project>

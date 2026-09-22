@@ -3,11 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LlmScanHelper", "LLMScanHelper\LLMScanHelper.csproj", "{B1A5C3E9-4F2D-4E8A-9C7B-2D6F1A8E5C42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LLMScanHelper", "LLMScanHelper\LLMScanHelper.csproj", "{B1A5C3E9-4F2D-4E8A-9C7B-2D6F1A8E5C42}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLMScanHelper.Tests", "tests\LLMScanHelper.Tests\LLMScanHelper.Tests.csproj", "{5DBAC8BD-46FE-49FE-8624-0A549A89D3F1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{FBF56CC3-7AE6-AD2D-3F14-7F97FD322CD6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LlmScanHelper.Core", "Core\LlmScanHelper.Core\LlmScanHelper.Core.csproj", "{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,11 +47,24 @@ Global
 		{5DBAC8BD-46FE-49FE-8624-0A549A89D3F1}.Release|x64.Build.0 = Release|Any CPU
 		{5DBAC8BD-46FE-49FE-8624-0A549A89D3F1}.Release|x86.ActiveCfg = Release|Any CPU
 		{5DBAC8BD-46FE-49FE-8624-0A549A89D3F1}.Release|x86.Build.0 = Release|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Debug|x64.Build.0 = Debug|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Debug|x86.Build.0 = Debug|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Release|x64.ActiveCfg = Release|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Release|x64.Build.0 = Release|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Release|x86.ActiveCfg = Release|Any CPU
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5DBAC8BD-46FE-49FE-8624-0A549A89D3F1} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{0B98AAEE-E464-4CF7-B43F-AB2830CB0F0E} = {FBF56CC3-7AE6-AD2D-3F14-7F97FD322CD6}
 	EndGlobalSection
 EndGlobal
