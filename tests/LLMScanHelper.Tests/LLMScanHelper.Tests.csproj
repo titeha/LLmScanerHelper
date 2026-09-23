@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -16,8 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Основной проект теперь лежит в папке LLMScanHelper\ (из tests\LLMScanHelper.Tests\ -> ..\..\LLMScanHelper\). -->
-    <ProjectReference Include="..\..\UI\LlmScanHelper.UI.Windows\LlmScanHelper.UI.Windows.csproj" />
+    <!-- Тесты не зависят от WPF: только Core (домен) + UI.Common (MainViewModel). -->
     <ProjectReference Include="..\..\Core\LlmScanHelper.Core\LlmScanHelper.Core.csproj" />
     <ProjectReference Include="..\..\UI\LlmScanHelper.UI.Common\LlmScanHelper.UI.Common.csproj" />
   </ItemGroup>
