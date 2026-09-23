@@ -1,8 +1,7 @@
 using System.IO;
 using System.Text;
-using System.Windows;
-using System.Windows.Threading;
 using LlmScanHelper.Models;
+using LlmScanHelper.UI.Services;
 
 namespace LlmScanHelper.ViewModels
 {
@@ -339,7 +338,7 @@ namespace LlmScanHelper.ViewModels
 
       try
       {
-        Clipboard.SetText(LaunchCommand);
+        _clipboard.SetText(LaunchCommand);
         ShowCopyStatus("Скопировано ✓");
       }
       catch
@@ -359,7 +358,7 @@ namespace LlmScanHelper.ViewModels
 
       try
       {
-        Clipboard.SetText(AliasText);
+        _clipboard.SetText(AliasText);
         ShowCopyStatus("Алиас скопирован ✓");
       }
       catch
@@ -368,16 +367,12 @@ namespace LlmScanHelper.ViewModels
       }
     }
 
+    private readonly Debouncer _flashDebouncer;
+
     private void ShowCopyStatus(string text)
     {
       CopyStatusText = text;
-      if (_flashTimer == null)
-      {
-        _flashTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1500) };
-        _flashTimer.Tick += (_, _) => { _flashTimer.Stop(); CopyStatusText = ""; };
-      }
-      _flashTimer.Stop();
-      _flashTimer.Start();
+      _flashDebouncer.Start();
     }
   }
 }

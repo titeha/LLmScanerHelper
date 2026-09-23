@@ -16,7 +16,7 @@ public class BuildCommandTests
   /// <summary>VM с уже «загруженной» моделью (без реального парсинга файла).</summary>
   private static MainViewModel CreateVm(GgufInfo gguf)
   {
-    var vm = new MainViewModel();
+    var vm = TestVm.New();
     vm._gguf = gguf;
     vm._currentPath = ModelPath;
     return vm;

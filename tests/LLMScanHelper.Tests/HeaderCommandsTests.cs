@@ -8,7 +8,7 @@ namespace LlmScanHelper.Tests;
 
 public class HeaderCommandsTests
 {
-    private static MainViewModel NewVm() => new MainViewModel();
+    private static MainViewModel NewVm() => TestVm.New();
 
     [Fact]
     public void OpenSettingsCommand_is_exposed_on_viewmodel()

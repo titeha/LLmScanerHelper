@@ -1,6 +1,5 @@
-using System.Windows.Threading;
-
 using LlmScanHelper.Models;
+using LlmScanHelper.UI.Services;
 using LlmScanHelper.Models.Settings;
 
 namespace LlmScanHelper.ViewModels
@@ -12,31 +11,21 @@ namespace LlmScanHelper.ViewModels
   {
     // ==================== Сохранение параметров ====================
 
-    private DispatcherTimer SaveTimer
-    {
-      get
-      {
-        if (_saveTimer == null)
-        {
-          _saveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(800) };
-          _saveTimer.Tick += (_, _) => { _saveTimer.Stop(); SaveNow(); };
-        }
-        return _saveTimer;
-      }
-    }
+    // Инициализируется в конструкторе MainViewModel (инициализатор поля не может обращаться к this).
+    private readonly Debouncer _saveDebouncer;
 
     private void SaveSoon()
     {
       if (_suppressSave)
         return;
-      SaveTimer.Stop();
-      SaveTimer.Start();
+      _saveDebouncer.Stop();
+      _saveDebouncer.Start();
     }
 
     /// <summary>Немедленно сбросить отложенные правки в хранилище (сохранить сейчас).</summary>
     public void FlushPendingSave()
     {
-      _saveTimer?.Stop();
+      _saveDebouncer.Stop();
       if (_suppressSave)
         return;
       if (_currentPath != null || Models.Count > 0)

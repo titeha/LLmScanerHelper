@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Памятка «почему так» в Markdown; парсер — позже, пока сырой текст -->
-    <Resource Include="Texts\memo.md" />
+    <!-- Памятка «почему так» в Markdown; файл перенесён в UI.Common; Resource= сохраняет логическое имя для pack://application:,,,/Texts/memo.md -->
+    <Resource Include="..\UI\LlmScanHelper.UI.Common\Texts\memo.md" Resource="Texts/memo.md" />
     <!-- Иконка окна (exe-иконка — через ApplicationIcon) -->
     <Resource Include="Assets\app-icon.png" />
     <!-- Иконки кнопок заголовка (шестерёнка / «!») -->
@@ -35,6 +35,11 @@
   <ItemGroup>
     <!-- Доступ к internal-членам для регрессионных тестов сборки команды -->
     <InternalsVisibleTo Include="LLMScanHelper.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- UI.Common — SharedViewModels/MainViewModel (net10.0); Core тянется транзитом, но m: в XAML резолвит типы напрямую -->
+    <ProjectReference Include="..\UI\LlmScanHelper.UI.Common\LlmScanHelper.UI.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

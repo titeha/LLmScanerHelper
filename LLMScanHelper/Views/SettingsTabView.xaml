@@ -1,7 +1,7 @@
 <UserControl x:Class="LlmScanHelper.Views.SettingsTabView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:t="clr-namespace:LlmScanHelper.Texts">
+             xmlns:t="clr-namespace:LlmScanHelper.Texts;assembly=LlmScanHelper.UI.Common">
 
   <StackPanel Margin="10">
     <TextBlock Text="Каталоги моделей:"

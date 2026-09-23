@@ -15,7 +15,7 @@ public class ReasonBudgetMessageListTests
   [Fact]
   public void Empty_List_Seeds_With_Default_Message()
   {
-    var vm = new MainViewModel();
+    var vm = TestVm.New();
 
     // Пустой список сидится стандартным текстом (поле предзаполнено им же)
     Assert.Single(vm.ReasonBudgetMessages);
@@ -26,7 +26,7 @@ public class ReasonBudgetMessageListTests
   [Fact]
   public void Editing_Message_Adds_To_Shared_List()
   {
-    var vm = new MainViewModel();
+    var vm = TestVm.New();
 
     // Ручная правка: новое значение добавляется в общий список
     vm.ReasonBudgetMessage = "Custom budget message";
@@ -41,7 +41,7 @@ public class ReasonBudgetMessageListTests
   [Fact]
   public void Empty_Message_Not_Added_To_List()
   {
-    var vm = new MainViewModel();
+    var vm = TestVm.New();
 
     // Пустое значение не попадает в список
     int count = vm.ReasonBudgetMessages.Count;

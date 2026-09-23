@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:m="clr-namespace:LlmScanHelper.Models;assembly=LlmScanHelper.Core"
-             xmlns:t="clr-namespace:LlmScanHelper.Texts"
+             xmlns:t="clr-namespace:LlmScanHelper.Texts;assembly=LlmScanHelper.UI.Common"
              xmlns:ctrl="clr-namespace:LlmScanHelper.Controls">
 
   <DockPanel>

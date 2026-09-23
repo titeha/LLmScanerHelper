@@ -11,7 +11,7 @@ namespace LlmScanHelper.Views
     public MainWindow()
     {
       InitializeComponent();
-      DataContext = new MainViewModel();
+      DataContext = new MainViewModel(new Platform.WpfClipboard(), new Platform.WpfUiWindows(), new Platform.WpfFolderPicker());
 
       // Команды в заголовке (Настройки/Справка) живут в MainViewModel,
       // а не в code-behind: контекст биндинга WindowCommands = DataContext окна.

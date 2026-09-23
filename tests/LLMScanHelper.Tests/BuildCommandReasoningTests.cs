@@ -24,7 +24,7 @@ public class BuildCommandReasoningTests
 
   private static MainViewModel CreateVm(bool hasReasoning = true)
   {
-    var vm = new MainViewModel();
+    var vm = TestVm.New();
     vm._gguf = new GgufInfo
     {
       Arch = "llama", BlockCount = 48, ContextLength = 131072,

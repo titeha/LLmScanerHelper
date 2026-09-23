@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ti-Soft.MvvmUtilites" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\LlmScanHelper.Core\LlmScanHelper.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Доступ к internal-членам для регрессионных тестов -->
+    <InternalsVisibleTo Include="LLMScanHelper.Tests" />
+  </ItemGroup>
+
+</Project>

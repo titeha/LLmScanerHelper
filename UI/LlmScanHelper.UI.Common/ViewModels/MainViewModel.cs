@@ -1,10 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 using LlmScanHelper.Models;
 using LlmScanHelper.Models.Settings;
-using LlmScanHelper.Views;
+using LlmScanHelper.UI.Services;
 using MvvmUtilites;
 
 namespace LlmScanHelper.ViewModels
@@ -30,11 +29,21 @@ namespace LlmScanHelper.ViewModels
     private bool _suppressSave;            // массовое применение — без сохранения
     private bool _suppressAliasEdit;       // программная установка алиаса
     private int _loadSeq;                  // защита от гонок при быстрой смене моделей
-    private DispatcherTimer? _saveTimer;
-    private DispatcherTimer? _flashTimer;
+    private readonly IClipboard _clipboard;
+    private readonly IUiWindows _uiWindows;
+    private readonly IFolderPicker _folderPicker;
 
-    public MainViewModel()
+    public MainViewModel(IClipboard clipboard, IUiWindows uiWindows, IFolderPicker folderPicker)
     {
+      _clipboard = clipboard;
+      _uiWindows = uiWindows;
+      _folderPicker = folderPicker;
+
+      // Debouncer — в конструкторе, потому что иннициализатор поля не может обращаться к this
+      // (SaveNow и CopyStatusText — экземпляры).
+      _saveDebouncer = new Debouncer(800, SaveNow);
+      _flashDebouncer = new Debouncer(1500, () => CopyStatusText = "");
+
       _store.Load();
       ApplyGlobalFromStore();
       ApplyCatalogsFromStore();
@@ -64,13 +73,13 @@ namespace LlmScanHelper.ViewModels
     /// <summary>Открывает модальное окно настроек (блокирует главное до закрытия).</summary>
     private void OpenSettings()
     {
-      new SettingsWindow(this).ShowDialog();
+      _uiWindows.OpenSettings(this);
     }
 
     /// <summary>Открывает модальное окно справки «Почему так» (блокирует главное до закрытия).</summary>
     private void OpenHelp()
     {
-      new HelpWindow(this).ShowDialog();
+      _uiWindows.OpenHelp(this);
     }
 
     /// <summary>Вызывается из MainWindow после загрузки окна.</summary>

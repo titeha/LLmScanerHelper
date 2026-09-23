@@ -46,13 +46,7 @@ namespace LlmScanHelper.ViewModels
 
     private string? PromptForCatalogPath()
     {
-      var dlg = new Microsoft.Win32.OpenFolderDialog
-      {
-        Title = "Выберите папку с моделями"
-      };
-      if (dlg.ShowDialog() == true)
-        return dlg.FolderName;
-      return null;
+      return _folderPicker.PickFolder("Выберите папку с моделями");
     }
 
     private void AddCatalog()
