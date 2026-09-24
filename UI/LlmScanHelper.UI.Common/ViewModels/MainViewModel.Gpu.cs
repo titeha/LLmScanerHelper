@@ -1,4 +1,5 @@
 using LlmScanHelper.Models;
+using LlmScanHelper.Models.Gpu;
 
 namespace LlmScanHelper.ViewModels
 {
@@ -127,45 +128,15 @@ namespace LlmScanHelper.ViewModels
 
     private string CombinedDevices() => FindV100Device() + "," + FindDesktopRtxDevice();
 
-    private List<string> SelectedDevices() => (DevicesText ?? "")
-      .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-      .Where(x => x.Length > 0)
-      .ToList();
-
-    private double ReserveForDeviceGiB(string deviceId, int position)
-    {
-      var info = _gpus.FirstOrDefault(x => x.Id.Equals(deviceId, StringComparison.OrdinalIgnoreCase));
-      if (info != null)
-      {
-        if (info.IsV100())
-          return ReserveV100GiB;
-        if (info.IsDesktopRtx())
-          return Math.Max(ReserveRtxGiB, AppDefaults.MinDesktopReserveGiB);
-      }
-      // Fallback: первая карта — compute V100, вторая — desktop RTX
-      return position == 0 ? ReserveV100GiB : Math.Max(ReserveRtxGiB, AppDefaults.MinDesktopReserveGiB);
-    }
-
-    private static int GiBToMiB(double gib) => (int)Math.Round(gib * 1024.0, MidpointRounding.AwayFromZero);
-
-    private List<int> CurrentFitTargetsMiB()
-    {
-      var devs = SelectedDevices();
-      var result = new List<int>();
-      for (int i = 0; i < devs.Count; i++)
-        result.Add(GiBToMiB(ReserveForDeviceGiB(devs[i], i)));
-      return result;
-    }
-
     private void UpdateFitTargets()
     {
-      var devs = SelectedDevices();
+      var devs = FitTargets.ParseDevices(DevicesText);
       if (devs.Count == 0)
       {
         FitTargetsText = "fit-target: устройства не заданы";
         return;
       }
-      var targets = CurrentFitTargetsMiB();
+      var targets = FitTargets.CurrentFitTargetsMiB(_gpus, DevicesText, ReserveV100GiB, ReserveRtxGiB);
       FitTargetsText = "--fit-target " + string.Join(",", targets) + " MiB";
     }
   }

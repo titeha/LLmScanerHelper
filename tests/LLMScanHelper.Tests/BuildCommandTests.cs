@@ -1,26 +1,17 @@
 using LlmScanHelper.Models;
-using LlmScanHelper.ViewModels;
+using LlmScanHelper.Models.Command;
 using Xunit;
 
 namespace LlmScanHelper.Tests;
 
 /// <summary>
-/// Регрессионные тесты сборки строки запуска llama-server (MainViewModel.BuildCommand).
+/// Регрессионные тесты сборки строки запуска llama-server.
 /// GgufInfo создаётся в памяти (без парсинга файла) — тестируем именно логику
 /// сборки команды, а не парсер GGUF.
 /// </summary>
 public class BuildCommandTests
 {
   private const string ModelPath = @"W:\LLStudio\Models\test\model.gguf";
-
-  /// <summary>VM с уже «загруженной» моделью (без реального парсинга файла).</summary>
-  private static MainViewModel CreateVm(GgufInfo gguf)
-  {
-    var vm = TestVm.New();
-    vm._gguf = gguf;
-    vm._currentPath = ModelPath;
-    return vm;
-  }
 
   private static GgufInfo Gguf(bool hasReasoning = false, long mtpSize = 0, bool hasChatTemplate = false)
     => new()
@@ -41,8 +32,9 @@ public class BuildCommandTests
   [Fact]
   public void Builds_Basic_Auto_Command_Without_Reasoning()
   {
-    var vm = CreateVm(Gguf(hasReasoning: false));
-    string cmd = vm.BuildCommand(ModelPath);
+    var gguf = Gguf(hasReasoning: false);
+    var p = new LlamaServerParams();
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.StartsWith("llama-server -m \"" + ModelPath + "\"", cmd);
 
@@ -83,9 +75,10 @@ public class BuildCommandTests
   [Fact]
   public void Omits_Optional_Flags_When_Zero()
   {
-    var vm = CreateVm(Gguf());
+    var gguf = Gguf();
+    var p = new LlamaServerParams();
     // Threads/ThreadsBatch = 0 по умолчанию → флаги не выдаются
-    string cmd = vm.BuildCommand(ModelPath);
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.DoesNotContain(" -t ", " " + cmd + " ");
     Assert.DoesNotContain(" -tb ", " " + cmd + " ");
@@ -96,9 +89,9 @@ public class BuildCommandTests
   [Fact]
   public void Includes_Alias_When_Set()
   {
-    var vm = CreateVm(Gguf());
-    vm.AliasText = "My_Model";
-    string cmd = vm.BuildCommand(ModelPath);
+    var gguf = Gguf();
+    var p = new LlamaServerParams { AliasText = "My_Model" };
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.Contains("--alias \"My_Model\"", cmd);
   }

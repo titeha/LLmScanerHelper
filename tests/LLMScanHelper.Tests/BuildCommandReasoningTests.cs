@@ -1,5 +1,5 @@
 using LlmScanHelper.Models;
-using LlmScanHelper.ViewModels;
+using LlmScanHelper.Models.Command;
 using Xunit;
 
 namespace LlmScanHelper.Tests;
@@ -22,29 +22,26 @@ public class BuildCommandReasoningTests
   private const string BudgetFlag = "--reasoning-budget ";
   private const string MsgFlag = "--reasoning-budget-message ";
 
-  private static MainViewModel CreateVm(bool hasReasoning = true)
+  private static GgufInfo Gguf(bool hasReasoning = true) => new()
   {
-    var vm = TestVm.New();
-    vm._gguf = new GgufInfo
-    {
-      Arch = "llama", BlockCount = 48, ContextLength = 131072,
-      FileSize = 10_000_000_000L, HasReasoning = hasReasoning,
-    };
-    vm._currentPath = ModelPath;
-    return vm;
-  }
+    Arch = "llama", BlockCount = 48, ContextLength = 131072,
+    FileSize = 10_000_000_000L, HasReasoning = hasReasoning,
+  };
 
   // ==================== ТЗ2: режим on ====================
 
   [Fact]
   public void On_BudgetPositive_MessageSet_PassesAllThree()
   {
-    var vm = CreateVm();
-    vm.ReasoningMode = "on";
-    vm.ReasonBudget = 4096;
-    vm.ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
+    var gguf = Gguf();
+    var p = new LlamaServerParams
+    {
+      ReasoningMode = "on",
+      ReasonBudget = 4096,
+      ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage,
+    };
 
-    string cmd = vm.BuildCommand(ModelPath);
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.Contains("--reasoning on", cmd);
     Assert.Contains(BudgetFlag + "4096", cmd);
@@ -54,12 +51,15 @@ public class BuildCommandReasoningTests
   [Fact]
   public void On_BudgetPositive_MessageEmpty_UsesDefaultMessage()
   {
-    var vm = CreateVm();
-    vm.ReasoningMode = "on";
-    vm.ReasonBudget = 4096;
-    vm.ReasonBudgetMessage = "";  // пусто → ставим дефолт
+    var gguf = Gguf();
+    var p = new LlamaServerParams
+    {
+      ReasoningMode = "on",
+      ReasonBudget = 4096,
+      ReasonBudgetMessage = "",  // пусто → ставим дефолт
+    };
 
-    string cmd = vm.BuildCommand(ModelPath);
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.Contains("--reasoning on", cmd);
     Assert.Contains(BudgetFlag + "4096", cmd);
@@ -69,12 +69,15 @@ public class BuildCommandReasoningTests
   [Fact]
   public void On_BudgetZero_UsesDefaultMinimum_WithMessage()
   {
-    var vm = CreateVm();
-    vm.ReasoningMode = "on";
-    vm.ReasonBudget = 0;  // режим on + 0 → дефолтный минимум 1024
-    vm.ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
+    var gguf = Gguf();
+    var p = new LlamaServerParams
+    {
+      ReasoningMode = "on",
+      ReasonBudget = 0,  // режим on + 0 → дефолтный минимум 1024
+      ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage,
+    };
 
-    string cmd = vm.BuildCommand(ModelPath);
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.Contains("--reasoning on", cmd);
     Assert.Contains(BudgetFlag + "1024", cmd);
@@ -84,12 +87,15 @@ public class BuildCommandReasoningTests
   [Fact]
   public void On_BudgetZero_MessageEmpty_UsesDefaultMinimum_WithDefaultMessage()
   {
-    var vm = CreateVm();
-    vm.ReasoningMode = "on";
-    vm.ReasonBudget = 0;
-    vm.ReasonBudgetMessage = "";  // пусто → дефолтный минимум + дефолтное сообщение
+    var gguf = Gguf();
+    var p = new LlamaServerParams
+    {
+      ReasoningMode = "on",
+      ReasonBudget = 0,
+      ReasonBudgetMessage = "",  // пусто → дефолтный минимум + дефолтное сообщение
+    };
 
-    string cmd = vm.BuildCommand(ModelPath);
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.Contains("--reasoning on", cmd);
     Assert.Contains(BudgetFlag + "1024", cmd);
@@ -101,12 +107,15 @@ public class BuildCommandReasoningTests
   [Fact]
   public void Off_OnlyReasoningOff_NoBudgetOrMessage()
   {
-    var vm = CreateVm();
-    vm.ReasoningMode = "off";
-    vm.ReasonBudget = 4096;
-    vm.ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
+    var gguf = Gguf();
+    var p = new LlamaServerParams
+    {
+      ReasoningMode = "off",
+      ReasonBudget = 4096,
+      ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage,
+    };
 
-    string cmd = vm.BuildCommand(ModelPath);
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.Contains("--reasoning off", cmd);
     Assert.DoesNotContain(BudgetFlag, cmd);
@@ -118,12 +127,15 @@ public class BuildCommandReasoningTests
   [Fact]
   public void Auto_NoReasoningFlag_ButBudgetAndMessage()
   {
-    var vm = CreateVm();
-    vm.ReasoningMode = "auto";
-    vm.ReasonBudget = 4096;
-    vm.ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
+    var gguf = Gguf();
+    var p = new LlamaServerParams
+    {
+      ReasoningMode = "auto",
+      ReasonBudget = 4096,
+      ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage,
+    };
 
-    string cmd = vm.BuildCommand(ModelPath);
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     // auto → --reasoning не передаётся (дефолт runtime)
     Assert.DoesNotContain("--reasoning ", cmd);
@@ -135,12 +147,15 @@ public class BuildCommandReasoningTests
   [Fact]
   public void Auto_BudgetPositive_MessageEmpty_UsesDefaultMessage()
   {
-    var vm = CreateVm();
-    vm.ReasoningMode = "auto";
-    vm.ReasonBudget = 4096;
-    vm.ReasonBudgetMessage = "";  // пусто → дефолт
+    var gguf = Gguf();
+    var p = new LlamaServerParams
+    {
+      ReasoningMode = "auto",
+      ReasonBudget = 4096,
+      ReasonBudgetMessage = "",  // пусто → дефолт
+    };
 
-    string cmd = vm.BuildCommand(ModelPath);
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.DoesNotContain("--reasoning ", cmd);
     Assert.Contains(BudgetFlag + "4096", cmd);
@@ -150,12 +165,15 @@ public class BuildCommandReasoningTests
   [Fact]
   public void Auto_BudgetZero_OmitsBothFlags()
   {
-    var vm = CreateVm();
-    vm.ReasoningMode = "auto";
-    vm.ReasonBudget = 0;
-    vm.ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
+    var gguf = Gguf();
+    var p = new LlamaServerParams
+    {
+      ReasoningMode = "auto",
+      ReasonBudget = 0,
+      ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage,
+    };
 
-    string cmd = vm.BuildCommand(ModelPath);
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.DoesNotContain("--reasoning ", cmd);
     Assert.DoesNotContain(BudgetFlag, cmd);
@@ -165,12 +183,15 @@ public class BuildCommandReasoningTests
   [Fact]
   public void Auto_BudgetZero_MessageEmpty_NoReasoningFlags()
   {
-    var vm = CreateVm();
-    vm.ReasoningMode = "auto";
-    vm.ReasonBudget = 0;
-    vm.ReasonBudgetMessage = "";
+    var gguf = Gguf();
+    var p = new LlamaServerParams
+    {
+      ReasoningMode = "auto",
+      ReasonBudget = 0,
+      ReasonBudgetMessage = "",
+    };
 
-    string cmd = vm.BuildCommand(ModelPath);
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.DoesNotContain("--reasoning ", cmd);
     Assert.DoesNotContain(BudgetFlag, cmd);
@@ -182,12 +203,15 @@ public class BuildCommandReasoningTests
   [Fact]
   public void ModelWithoutReasoning_NoReasoningFlags()
   {
-    var vm = CreateVm(hasReasoning: false);
-    vm.ReasoningMode = "on";
-    vm.ReasonBudget = 4096;
-    vm.ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage;
+    var gguf = Gguf(hasReasoning: false);
+    var p = new LlamaServerParams
+    {
+      ReasoningMode = "on",
+      ReasonBudget = 4096,
+      ReasonBudgetMessage = AppDefaults.DefaultReasonBudgetMessage,
+    };
 
-    string cmd = vm.BuildCommand(ModelPath);
+    string cmd = LlamaServerCommandBuilder.Build(p, gguf, ModelPath);
 
     Assert.DoesNotContain("--reasoning", cmd);
     Assert.DoesNotContain(BudgetFlag, cmd);
