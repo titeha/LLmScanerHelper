@@ -33,7 +33,7 @@ dotnet run -c Release --project UI/LlmScanHelper.UI.Windows
 ## Что где
 
 Решение `LLMScanHelper.sln` — 4 проекта (после расщепления Core/UI):
-**Core** (`Core/LlmSanHelper.Core/`, net10.0) — доменная логика, без UI;
+**Core** (`Core/LlmScanHelper.Core/`, net10.0) — доменная логика, без UI;
 **UI.Common** (`UI/LlmScanHelper.UI.Common/`, net10.0) — MainViewModel и абстракции, без WPF;
 **UI.Windows** (`UI/LlmScanHelper.UI.Windows/`, net10.0-windows) — WPF-оболочка;
 **Tests** (`tests/LLMScanHelper.Tests/`, net10.0) — xUnit (23 теста).
@@ -42,33 +42,33 @@ dotnet run -c Release --project UI/LlmScanHelper.UI.Windows
 |---|---|
 | `Core/LlmScanHelper.Core/GgufInfo.cs` | парсер GGUF (архитектура, блоки, KV, MTP/nextn, reasoning, tools) |
 | `Core/LlmScanHelper.Core/GgufScannerService.cs` | обход дерева моделей, издатель, поиск mmproj |
-| `Core/LlmSanHelper.Core/GpuService.cs` | `llama-server --list-devices` (парсинг CUDA-id и свободной VRAM) |
+| `Core/LlmScanHelper.Core/GpuService.cs` | `llama-server --list-devices` (парсинг CUDA-id и свободной VRAM) |
 | `Core/LlmScanHelper.Core/LayerEstimator.cs` | грубая оценка раскладки блоков (веса+KV) по картам |
 | `Core/LlmScanHelper.Core/AliasBuilder.cs` | генератор алиаса из имени файла (убирает квант-теги) |
 | `Core/LlmScanHelper.Core/AppDefaults.cs` | константы по умолчанию (корень моделей, контекст, порт, хост) |
 | `Core/LlmScanHelper.Core/ModelTypes.cs` | доменные типы: ModelEntry, MmprojEntry, GpuDeviceInfo, GpuQueryResult |
-| `Core/LlmSanHelper.Core/Settings/SettingsStore.cs` | JSON-хранилище (portable) |
+| `Core/LlmScanHelper.Core/Settings/SettingsStore.cs` | JSON-хранилище (portable) |
 | `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.cs` | ядро: состояние, параметры, команды, сканирование; DI: IClipboard/IUiWindows/IFolderPicker |
-| `UI/LlmSanHelper.UI.Common/ViewModels/MainViewModel.Model.cs` | инфо о модели, загрузка, мультимодальность (mmproj) |
+| `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.Model.cs` | инфо о модели, загрузка, мультимодальность (mmproj) |
 | `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.MtpReasoning.cs` | сервер (хост/порт), MTP, reasoning, jinja |
 | `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.Gpu.cs` | GPU layout и опрос устройств |
-| `UI/LlmSanHelper.UI.Common/ViewModels/MainViewModel.Presets.cs` | пресеты |
+| `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.Presets.cs` | пресеты |
 | `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.Catalogs.cs` | корневые каталоги моделей |
 | `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.Persistence.cs` | сохранение/загрузка настроек (дебаунс через Debouncer) |
-| `UI/LlmSanHelper.UI.Common/ViewModels/MainViewModel.Output.cs` | сборка команды, предупреждения, оценка слоёв, буфер обмена |
+| `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.Output.cs` | сборка команды, предупреждения, оценка слоёв, буфер обмена |
 | `UI/LlmScanHelper.UI.Common/Services/IClipboard.cs`, `IUiWindows.cs`, `IFolderPicker.cs` | абстракции UI; WPF-реализации — в `UI.Windows/Platform/` |
-| `UI/LlmSanHelper.UI.Common/Services/Debouncer.cs` | дебаунс (сохранение настроек, индикатор копирования) |
+| `UI/LlmScanHelper.UI.Common/Services/Debouncer.cs` | дебаунс (сохранение настроек, индикатор копирования) |
 | `UI/LlmScanHelper.UI.Common/Texts/memo.md` | памятка «ПОЧЕМУ ТАК» (Markdown, вкладка «Памятка»; парсер — позже) |
 | `UI/LlmScanHelper.UI.Common/Texts/ToolTips.cs` | popup-подсказки по всем параметрам (зачем/влияет/дока) |
 | `UI/LlmScanHelper.UI.Windows/App.xaml`, `App.xaml.cs` | старт приложения: темы MahApps, финальное сохранение при выходе |
 | `UI/LlmScanHelper.UI.Windows/Windows/MainWindow.xaml` | каркас окна: панель (PanelTabView) + кнопки в заголовке (Настройки/Справка) |
-| `UI/LlmSanHelper.UI.Windows/Views/PanelTabView.xaml` | основной UserControl на главном окне: параметры, инфо, команда |
+| `UI/LlmScanHelper.UI.Windows/Views/PanelTabView.xaml` | основной UserControl на главном окне: параметры, инфо, команда |
 | `UI/LlmScanHelper.UI.Windows/Views/SettingsTabView.xaml` | вкладка «Настройки» (каталоги моделей); встроена в SettingsWindow |
-| `UI/LlmSanHelper.UI.Windows/Windows/SettingsWindow.xaml` | отдельное окно «Настройки», открывается из заголовка |
+| `UI/LlmScanHelper.UI.Windows/Windows/SettingsWindow.xaml` | отдельное окно «Настройки», открывается из заголовка |
 | `UI/LlmScanHelper.UI.Windows/Windows/HelpWindow.xaml` | отдельное окно «Справка» (памятка «Почему так»), открывается из заголовка |
 | `UI/LlmScanHelper.UI.Windows/Views/MemoTabView.xaml` | UserControl с памяткой «ПОЧЕМУ ТАК» (используется в HelpWindow) |
 | `UI/LlmScanHelper.UI.Windows/Controls/TextBoxHelpers.cs` | attached-поведение: коммит по Enter (TextBox / редактируемый ComboBox) |
-| `UI/LlmSanHelper.UI.Windows/Controls/ToolTipLinker.cs` | кликабельные ссылки в тултипах (перехват «сквозного» клика) |
+| `UI/LlmScanHelper.UI.Windows/Controls/ToolTipLinker.cs` | кликабельные ссылки в тултипах (перехват «сквозного» клика) |
 | `UI/LlmScanHelper.UI.Windows/Platform/WpfClipboard.cs`, `WpfUiWindows.cs`, `WpfFolderPicker.cs` | WPF-реализации абстракций из UI.Common |
 | `UI/LlmScanHelper.UI.Windows/Assets/app.ico` / `app-icon.png` | иконка приложения (exe и окно) |
 
