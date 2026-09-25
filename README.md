@@ -9,19 +9,36 @@ sampling-параметры разработчика, сохранение пр�
 
 ## Сборка и запуск
 
-Требуется Windows 10/11 и [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-(или просто .NET 10 Desktop Runtime для готовой сборки).
+Требуется [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+(или готовый runtime: .NET 10 Desktop Runtime на Windows, .NET 10 Runtime на Linux).
+Артефакты сборки — в корневом `artifacts/`, см. `Directory.Build.props`.
+
+### На Windows
+
+Сборка всего решения (обе оболочки — WPF и Avalonia):
 
 ```cmd
 dotnet build -c Release
+```
+
+Запуск WPF-версии:
+
+```cmd
 dotnet run -c Release --project UI/LlmScanHelper.UI.Windows
 ```
 
-Готовый exe: `artifacts\bin\LLMScanHelper\release\LLMScanHelper.exe`
-(артефакты сборки — в корневом `artifacts/`, см. `Directory.Build.props`).
+Готовый exe: `artifacts\bin\LLMScanHelper\release\LLMScanHelper.exe`.
 
-В том же решении — **Linux-версия на Avalonia** (те же Core + UI.Common,
-другая оболочка). Кросс-сборка с Windows:
+### На Linux (Avalonia)
+
+Сборка и запуск на самой Linux-машине:
+
+```bash
+dotnet build -c Release UI/LlmScanHelper.UI.Linux
+dotnet run -c Release --project UI/LlmScanHelper.UI.Linux
+```
+
+Кросс-сборка с Windows под linux-x64:
 
 ```cmd
 dotnet build -c Release UI/LlmScanHelper.UI.Linux -r linux-x64 --self-contained false
@@ -29,6 +46,9 @@ dotnet build -c Release UI/LlmScanHelper.UI.Linux -r linux-x64 --self-contained 
 
 Результат: `artifacts\bin\LlmScanHelper.UI.Linux\release_linux-x64\` (исполняемый
 `LLMScanHelper` + dll; запускать на Linux с .NET 10 runtime).
+
+Примечание: целиком решение на Linux не собирается — WPF-проект требует Windows
+(NETSDK1100); собирайте `UI.Linux`, он сам тянет Core и UI.Common.
 
 ## Открытие в IDE
 
