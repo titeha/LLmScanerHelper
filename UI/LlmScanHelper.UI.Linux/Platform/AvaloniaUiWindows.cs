@@ -21,6 +21,12 @@ public sealed class AvaloniaUiWindows : IUiWindows
     if (owner is not null) _ = new HelpWindow(vm).ShowDialog(owner);
   }
 
+  public void OpenReasonBudgetMessagesEditor(MainViewModel vm)
+  {
+    var owner = Owner();
+    if (owner is not null) _ = new ReasonBudgetMessagesEditorWindow(vm).ShowDialog(owner);
+  }
+
   private static Window? Owner() =>
     Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
       ? desktop.MainWindow

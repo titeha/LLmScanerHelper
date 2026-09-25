@@ -66,6 +66,8 @@ namespace LlmScanHelper.ViewModels
       RemoveCatalogCommand = new RelayCommand(RemoveCatalog);
       EditCatalogCommand = new AsyncRelayCommand(EditCatalogAsync);
 
+      ReasonBudgetMessagesEditorCommand = new RelayCommand(OpenReasonBudgetMessagesEditor);
+
       OpenSettingsCommand = new RelayCommand(OpenSettings);
       OpenHelpCommand = new RelayCommand(OpenHelp);
     }
@@ -80,6 +82,12 @@ namespace LlmScanHelper.ViewModels
     private void OpenHelp()
     {
       _uiWindows.OpenHelp(this);
+    }
+
+    /// <summary>Открывает окно редактирования сообщений бюджета reasoning.</summary>
+    private void OpenReasonBudgetMessagesEditor()
+    {
+      _uiWindows.OpenReasonBudgetMessagesEditor(this);
     }
 
     /// <summary>Вызывается из MainWindow после загрузки окна.</summary>
@@ -267,6 +275,7 @@ namespace LlmScanHelper.ViewModels
     public ICommand AddCatalogCommand { get; }
     public ICommand RemoveCatalogCommand { get; }
     public ICommand EditCatalogCommand { get; }
+    public ICommand ReasonBudgetMessagesEditorCommand { get; }
     public ICommand OpenSettingsCommand { get; }
     public ICommand OpenHelpCommand { get; }
 

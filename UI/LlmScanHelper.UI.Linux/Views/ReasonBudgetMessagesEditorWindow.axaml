@@ -1,0 +1,55 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:t="clr-namespace:LlmScanHelper.Texts;assembly=LlmScanHelper.UI.Common"
+        x:Class="LlmScanHelper.Views.ReasonBudgetMessagesEditorWindow"
+        Title="Редактор сообщений бюджета reasoning"
+        Width="520" Height="420">
+  <DockPanel Margin="12">
+    <!-- Toolbar -->
+    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+      <Button Content="+ Добавить" Command="{Binding AddCommand}" Padding="8,4" Margin="0,0,6,0" />
+      <Button Content="✏️ Редактировать" Command="{Binding EditCommand}" Padding="8,4" IsEnabled="{Binding CanEdit}" Margin="0,0,6,0" />
+      <Button Content="🗑️ Удалить" Command="{Binding DeleteCommand}" Padding="8,4" IsEnabled="{Binding CanDelete}" />
+      <TextBlock Text="Выберите сообщение для редактирования или удаления."
+                 VerticalAlignment="Center" Margin="16,0,0,0" Foreground="DimGray" FontSize="12" />
+    </StackPanel>
+
+    <!-- List of messages -->
+    <Grid Margin="0,0,0,8">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4">
+        <ListBox ItemsSource="{Binding Messages}" SelectedItem="{Binding SelectedMessage}">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Spacing="2" />
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding}" Padding="8,4" />
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
+
+      <!-- Add/Edit panel -->
+      <StackPanel Grid.Row="1" Margin="0,8,0,0">
+        <StackPanel Orientation="Horizontal" IsVisible="{Binding IsAddMode}">
+          <TextBox Text="{Binding EditText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="360" Margin="0,0,6,0" />
+          <Button Content="Сохранить" Command="{Binding SaveCommand}" Padding="8,4" />
+          <Button Content="Отмена" Command="{Binding CancelCommand}" Padding="8,4" Margin="6,0,0,0" />
+        </StackPanel>
+        <TextBlock Text="Введите новое сообщение и нажмите «Сохранить»."
+                   FontSize="12" Foreground="DimGray" IsVisible="{Binding IsAddMode}" Margin="0,4,0,0" />
+      </StackPanel>
+    </Grid>
+
+    <!-- Action buttons -->
+    <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Right">
+      <Button Content="Закрыть" Command="{Binding CancelCommand}" Padding="12,6" />
+    </StackPanel>
+  </DockPanel>
+</Window>

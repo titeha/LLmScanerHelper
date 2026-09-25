@@ -8,4 +8,5 @@ public sealed class WpfUiWindows : IUiWindows
 {
   public void OpenSettings(MainViewModel vm) => new SettingsWindow(vm).ShowDialog();
   public void OpenHelp(MainViewModel vm) => new HelpWindow(vm).ShowDialog();
+  public void OpenReasonBudgetMessagesEditor(MainViewModel vm) => new ReasonBudgetMessagesEditorWindow(vm).ShowDialog();
 }

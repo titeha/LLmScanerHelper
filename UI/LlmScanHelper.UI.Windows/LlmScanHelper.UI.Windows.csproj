@@ -33,6 +33,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Окна и вкладки -->
+    <Page Update="Views\ReasonBudgetMessagesEditorWindow.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Доступ к internal-членам для регрессионных тестов сборки команды -->
     <InternalsVisibleTo Include="LLMScanHelper.Tests" />
   </ItemGroup>

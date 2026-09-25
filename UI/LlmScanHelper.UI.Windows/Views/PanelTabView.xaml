@@ -439,14 +439,20 @@
                         <TextBlock Text="budget message:"
                                    Style="{StaticResource Lbl}" />
                         <!-- ТЗ1: общий список сообщений (все модели) + можно вписать новое -->
-                        <ComboBox Width="480"
-                                 IsEditable="True"
-                                 ItemsSource="{Binding ReasonBudgetMessages}"
-                                 Text="{Binding ReasonBudgetMessage, UpdateSourceTrigger=LostFocus}"
-                                 VerticalContentAlignment="Center"
-                                 IsEnabled="{Binding IsReasoningControlsEnabled}"
-                                 ctrl:TextBoxHelpers.CommitOnEnter="True"
-                                 ToolTip="{x:Static t:ToolTips.ReasonBudgetMessage}" />
+                        <StackPanel Orientation="Horizontal">
+                          <ComboBox Width="420"
+                                   IsEditable="True"
+                                   ItemsSource="{Binding ReasonBudgetMessages}"
+                                   Text="{Binding ReasonBudgetMessage, UpdateSourceTrigger=LostFocus}"
+                                   VerticalContentAlignment="Center"
+                                   IsEnabled="{Binding IsReasoningControlsEnabled}"
+                                   ctrl:TextBoxHelpers.CommitOnEnter="True"
+                                   ToolTip="{x:Static t:ToolTips.ReasonBudgetMessage}" />
+                          <Button Content="..." Width="32" Height="24" Padding="0"
+                                  Command="{Binding ReasonBudgetMessagesEditorCommand}"
+                                  Margin="6,0,0,0"
+                                  ToolTip="{x:Static t:ToolTips.ReasonBudgetMessageEditor}" />
+                        </StackPanel>
                       </StackPanel>
                     </StackPanel>
                   </Expander>

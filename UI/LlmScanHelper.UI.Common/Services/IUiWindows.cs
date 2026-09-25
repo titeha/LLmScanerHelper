@@ -7,4 +7,5 @@ public interface IUiWindows
 {
   void OpenSettings(MainViewModel vm);
   void OpenHelp(MainViewModel vm);
+  void OpenReasonBudgetMessagesEditor(MainViewModel vm);
 }
