@@ -62,9 +62,9 @@ namespace LlmScanHelper.ViewModels
       PresetQ8Command = new RelayCommand(ApplyPresetQ8);
       PresetV100Command = new RelayCommand(ApplyPresetV100);
 
-      AddCatalogCommand = new RelayCommand(AddCatalog);
+      AddCatalogCommand = new AsyncRelayCommand(AddCatalogAsync);
       RemoveCatalogCommand = new RelayCommand(RemoveCatalog);
-      EditCatalogCommand = new RelayCommand(EditCatalog);
+      EditCatalogCommand = new AsyncRelayCommand(EditCatalogAsync);
 
       OpenSettingsCommand = new RelayCommand(OpenSettings);
       OpenHelpCommand = new RelayCommand(OpenHelp);

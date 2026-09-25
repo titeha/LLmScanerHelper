@@ -44,14 +44,14 @@ namespace LlmScanHelper.ViewModels
       finally { _suppressSave = false; }
     }
 
-    private string? PromptForCatalogPath()
+    private Task<string?> PromptForCatalogPathAsync()
     {
-      return _folderPicker.PickFolder("Выберите папку с моделями");
+      return _folderPicker.PickFolderAsync("Выберите папку с моделями");
     }
 
-    private void AddCatalog()
+    private async Task AddCatalogAsync()
     {
-      var path = PromptForCatalogPath();
+      var path = await PromptForCatalogPathAsync();
       if (string.IsNullOrEmpty(path)) return;
       if (!Catalogs.Contains(path, StringComparer.OrdinalIgnoreCase))
       {
@@ -71,9 +71,9 @@ namespace LlmScanHelper.ViewModels
       SaveSoon();
     }
 
-    private void EditCatalog()
+    private async Task EditCatalogAsync()
     {
-      var path = PromptForCatalogPath();
+      var path = await PromptForCatalogPathAsync();
       if (string.IsNullOrEmpty(path)) return;
       if (!Catalogs.Contains(path, StringComparer.OrdinalIgnoreCase))
       {

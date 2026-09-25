@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:t="clr-namespace:LlmScanHelper.Texts;assembly=LlmScanHelper.UI.Common"
+             x:Class="LlmScanHelper.Views.SettingsTabView">
+
+  <StackPanel Margin="10">
+    <TextBlock Text="Каталоги моделей:"
+               FontSize="13" />
+    <TextBlock Text="{Binding SelectedCatalogText}"
+               Foreground="DimGray"
+               Margin="0,2,0,8" />
+    <ComboBox Width="480"
+              ItemsSource="{Binding Catalogs}"
+              SelectedItem="{Binding SelectedCatalog}"
+              ToolTip.Tip="{x:Static t:ToolTips.CatalogCombo}" />
+    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+      <Button Content="Добавить"
+              Command="{Binding AddCatalogCommand}"
+              Padding="10,4"
+              Margin="0,0,6,0"
+              ToolTip.Tip="{x:Static t:ToolTips.AddCatalog}" />
+      <Button Content="Удалить"
+              Command="{Binding RemoveCatalogCommand}"
+              Padding="10,4"
+              Margin="0,0,6,0"
+              ToolTip.Tip="{x:Static t:ToolTips.RemoveCatalog}" />
+      <Button Content="Изменить"
+              Command="{Binding EditCatalogCommand}"
+              Padding="10,4"
+              ToolTip.Tip="{x:Static t:ToolTips.EditCatalog}" />
+    </StackPanel>
+    <TextBlock Text="Активный каталог используется при сканировании и загрузке моделей."
+               FontSize="13" Foreground="DimGray" />
+  </StackPanel>
+</UserControl>

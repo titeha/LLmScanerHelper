@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RootNamespace>LlmScanHelper</RootNamespace>
+    <AssemblyName>LLMScanHelper</AssemblyName>
+    <!-- Отключаем compiled bindings — портируемый XAML без x:DataType, runtime-биндинги корректны. -->
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.3" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- memo.md в UI.Common; Link задаёт avares://LLMScanHelper/Texts/memo.md. Абсолютный Windows-путь — митигация MSYS-quirk для точечных имён папок (относительные интермитентно падают MSB9008). -->
+    <AvaloniaResource Include="W:\Projects\Windows\LLMScanHelper\UI\LlmScanHelper.UI.Common\Texts\memo.md" Link="Texts\memo.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="W:\Projects\Windows\LLMScanHelper\UI\LlmScanHelper.UI.Common\LlmScanHelper.UI.Common.csproj" />
+    <ProjectReference Include="W:\Projects\Windows\LLMScanHelper\Core\LlmScanHelper.Core\LlmScanHelper.Core.csproj" />
+  </ItemGroup>
+</Project>

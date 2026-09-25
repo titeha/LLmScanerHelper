@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:LlmScanHelper.Views"
+        x:Class="LlmScanHelper.Views.MainWindow"
+        Title="LLM Scan Helper"
+        Width="1400" Height="900"
+        MinWidth="1180" MinHeight="720"
+        WindowStartupLocation="CenterScreen"
+        FontSize="13">
+
+  <DockPanel>
+    <!-- Верхняя строка команд (аналог WPF WindowCommands: Настройки/Справка). Иконки стартуют как текст ⚙/?. -->
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="8,6,8,0">
+      <Button Content="⚙" Width="32" Height="26" Padding="4"
+              Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Настройки" />
+      <Button Content="?" Width="32" Height="26" Padding="4"
+              Command="{Binding OpenHelpCommand}" ToolTip.Tip="Почему так" />
+    </StackPanel>
+
+    <!-- Основная логика (скан, модель, GPU, команда) — тот же UserControl, что в WPF, портированный на Avalonia. -->
+    <views:PanelTabView />
+  </DockPanel>
+
+</Window>

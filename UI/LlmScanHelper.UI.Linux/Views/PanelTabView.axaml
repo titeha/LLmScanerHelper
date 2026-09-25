@@ -1,0 +1,625 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:m="clr-namespace:LlmScanHelper.Models;assembly=LlmScanHelper.Core"
+             xmlns:t="clr-namespace:LlmScanHelper.Texts;assembly=LlmScanHelper.UI.Common"
+             xmlns:views="clr-namespace:LlmScanHelper.Views"
+             x:Class="LlmScanHelper.Views.PanelTabView">
+
+  <DockPanel>
+        <!-- Инструментальная полоса -->
+        <DockPanel Dock="Top">
+          <StackPanel Orientation="Vertical" Margin="10,8,10,2">
+          <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+            <Button Content="Обновить GPU"
+                    Command="{Binding RefreshGpusCommand}"
+                    Margin="6,0,0,0"
+                    Padding="10,3"
+                    ToolTip.Tip="{x:Static t:ToolTips.RefreshGpu}" />
+            <TextBlock Text="  Модель:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,6,0" />
+            <ComboBox Width="620"
+                      ItemsSource="{Binding Models}"
+                      SelectedItem="{Binding SelectedModel}"
+                      ToolTip.Tip="{x:Static t:ToolTips.ModelCombo}" />
+            <!-- Кнопка сканирования рядом с ComboBox моделей. Логика — та же ScanCommand. -->
+            <Button Padding="4"
+                    Width="28" Height="28"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding ScanCommand}"
+                    ToolTip.Tip="{x:Static t:ToolTips.ScanGGUF}" />
+          </StackPanel>
+        </StackPanel>
+        </DockPanel>
+
+        <!-- Строка состояния: статусы и ошибки -->
+        <DockPanel Dock="Bottom">
+          <StackPanel Margin="0,6,0,0">
+            <TextBlock Text="{Binding StatusText}"
+                       TextWrapping="Wrap"
+                       Foreground="#666666" />
+          </StackPanel>
+        </DockPanel>
+
+        <Grid Margin="10,6,10,8">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="440" />
+          </Grid.ColumnDefinitions>
+
+          <!-- ======== ЛЕВая КОЛОНКА: ПАРАМЕТРЫ ======== -->
+          <ScrollViewer VerticalScrollBarVisibility="Auto"
+                        Grid.Column="0">
+            <StackPanel Margin="0,0,8,0">
+
+              <!-- API alias -->
+              <HeaderedContentControl Header="API alias">
+                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                  <TextBlock Text="Model alias (--alias):"
+                             VerticalAlignment="Center"
+                             Margin="0,0,6,0" />
+                  <!-- TextBox с кнопкой «копировать» — оформление упрощено до вертикального центрирования. -->
+                  <TextBox Width="360"
+                           Text="{Binding AliasText}"
+                           VerticalContentAlignment="Center"
+                           Margin="0,0,32,0"
+                           ToolTip.Tip="{x:Static t:ToolTips.Alias}" />
+                  <TextBlock Text="регистr сохраняется (GPT, UD — не трогаются)"
+                             Foreground="#666666"
+                             TextWrapping="Wrap"
+                             Margin="0,4,0,0"
+                             VerticalAlignment="Center" />
+                </StackPanel>
+              </HeaderedContentControl>
+
+              <!-- Контекст / KV / Attention -->
+              <HeaderedContentControl Header="Контекst / KV / Attention">
+                <StackPanel Margin="0,3,0,0">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Контекст:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0"
+                               MinWidth="150" />
+                    <TextBox Width="90"
+                             Text="{Binding Context}"
+                             VerticalContentAlignment="Center"
+                             ToolTip.Tip="{x:Static t:ToolTips.Context}" />
+                    <Slider Width="280"
+                            Margin="8,0,0,0"
+                            Minimum="1024"
+                            Maximum="{Binding MaxContext}"
+                            Value="{Binding Context}"
+                            ToolTip.Tip="{x:Static t:ToolTips.Context}" />
+                    <TextBlock Text="токенов (-c)"
+                               Foreground="#666666"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0"
+                               VerticalAlignment="Center" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="KV K:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0"
+                               MinWidth="150" />
+                    <ComboBox Width="80"
+                              ItemsSource="{Binding KvOptions}"
+                              SelectedItem="{Binding KvK}"
+                              ToolTip.Tip="{x:Static t:ToolTips.KvK}" />
+                    <TextBlock Text="KV V:"
+                               VerticalAlignment="Center"
+                               Margin="16,0,6,0" />
+                    <ComboBox Width="80"
+                              ItemsSource="{Binding KvOptions}"
+                              SelectedItem="{Binding KvV}"
+                              ToolTip.Tip="{x:Static t:ToolTips.KvV}" />
+                    <TextBlock Text="FlashAttn:"
+                               VerticalAlignment="Center"
+                               Margin="16,0,6,0" />
+                    <ComboBox Width="80"
+                              ItemsSource="{Binding FlashOptions}"
+                              SelectedItem="{Binding Flash}"
+                              ToolTip.Tip="{x:Static t:ToolTips.Flash}" />
+                  </StackPanel>
+                </StackPanel>
+              </HeaderedContentControl>
+
+              <!-- GPU layout -->
+              <HeaderedContentControl Header="GPU layout">
+                <StackPanel Margin="0,3,0,0">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Режим:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <ComboBox Width="200"
+                              ItemsSource="{Binding ModeOptions}"
+                              SelectedIndex="{Binding ModeIndex}"
+                              ToolTip.Tip="{x:Static t:ToolTips.Mode}" />
+                    <TextBlock Text="Устройства:"
+                               VerticalAlignment="Center"
+                               Margin="14,0,6,0" />
+                    <TextBox Width="150"
+                             Text="{Binding DevicesText}"
+                             VerticalContentAlignment="Center"
+                             ToolTip.Tip="{x:Static t:ToolTips.Devices}" />
+                    <TextBlock Text="split-mode:"
+                               VerticalAlignment="Center"
+                               Margin="14,0,6,0" />
+                    <ComboBox Width="90"
+                              ItemsSource="{Binding SplitModeOptions}"
+                              SelectedItem="{Binding SplitMode}"
+                              IsEnabled="{Binding ManualModeActive}"
+                              ToolTip.Tip="{x:Static t:ToolTips.SplitMode}" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="AUTO резерв V100 GiB:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0"
+                               MinWidth="150" />
+                    <TextBox Width="90"
+                             Text="{Binding ReserveV100GiB}"
+                             ToolTip.Tip="{x:Static t:ToolTips.ReserveV100}" />
+                    <TextBlock Text="desktop RTX GiB:"
+                               VerticalAlignment="Center"
+                               Margin="14,0,6,0" />
+                    <TextBox Width="90"
+                             Text="{Binding ReserveRtxGiB}"
+                             ToolTip.Tip="{x:Static t:ToolTips.ReserveRtx}" />
+                    <TextBlock Text="{Binding FitTargetsText}"
+                               Foreground="#666666"
+                               Margin="0,4,0,0"
+                               VerticalAlignment="Center"
+                               ToolTip.Tip="{x:Static t:ToolTips.FitTargets}" />
+                  </StackPanel>
+                  <TextBlock Foreground="#400000"
+                             TextWrapping="Wrap"
+                             Margin="0,6,0,0"
+                             Text="SAFE: после загрузки модели не открывай новые GPU-тяёлые приложения. --fit-target не hard-cap." />
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="MANUAL -ngl:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0"
+                               MinWidth="150" />
+                    <TextBox Width="90"
+                             Text="{Binding ManualNgl}"
+                             IsEnabled="{Binding ManualModeActive}"
+                             ToolTip.Tip="{x:Static t:ToolTips.ManualNgl}" />
+                    <TextBlock Text="tensor-split CUDA0:"
+                               VerticalAlignment="Center"
+                               Margin="14,0,6,0" />
+                    <TextBox Width="80"
+                             Text="{Binding Split0}"
+                             IsEnabled="{Binding ManualModeActive}"
+                             ToolTip.Tip="{x:Static t:ToolTips.TensorSplit}" />
+                    <TextBlock Text="CUDA1:"
+                               VerticalAlignment="Center"
+                               Margin="8,0,6,0" />
+                    <TextBox Width="80"
+                             Text="{Binding Split1}"
+                             IsEnabled="{Binding ManualModeActive}"
+                             ToolTip.Tip="{x:Static t:ToolTips.TensorSplit}" />
+                    <TextBlock Text="( это веса/пропорции, НЕ слои)"
+                               Foreground="#666666"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0"
+                               VerticalAlignment="Center" />
+                  </StackPanel>
+                </StackPanel>
+              </HeaderedContentControl>
+
+              <!-- Производительность / агент -->
+              <HeaderedContentControl Header="Производительность / агент">
+                <StackPanel Margin="0,3,0,0">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="batch -b:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <TextBox Width="90"
+                             Text="{Binding Batch}"
+                             ToolTip.Tip="{x:Static t:ToolTips.Batch}" />
+                    <TextBlock Text="ubatch -ub:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="90"
+                             Text="{Binding UBatch}"
+                             ToolTip.Tip="{x:Static t:ToolTips.UBatch}" />
+                    <TextBlock Text="слотов -np:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="70"
+                             Text="{Binding Slots}"
+                             ToolTip.Tip="{x:Static t:ToolTips.Slots}" />
+                    <TextBlock Text="threads -t (0=auto):"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="70"
+                             Text="{Binding Threads}"
+                             ToolTip.Tip="{x:Static t:ToolTips.Threads}" />
+                    <TextBlock Text="batch threads -tb:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="70"
+                             Text="{Binding ThreadsBatch}"
+                             ToolTip.Tip="{x:Static t:ToolTips.ThreadsBatch}" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal">
+                    <CheckBox Content="prompt cache"
+                              IsChecked="{Binding PromptCache}"
+                              Margin="0,0,10,0"
+                              ToolTip.Tip="{x:Static t:ToolTips.PromptCache}" />
+                    <TextBlock Text="cache-reuse:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <TextBox Width="90"
+                             Text="{Binding CacheReuse}"
+                             IsEnabled="{Binding PromptCache}"
+                             ToolTip.Tip="{x:Static t:ToolTips.CacheReuse}" />
+                    <TextBlock Text="SSE ping, с:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="70"
+                             Text="{Binding SsePing}"
+                             ToolTip.Tip="{x:Static t:ToolTips.SsePing}" />
+                    <TextBlock Text="HTTP timeout, с:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="90"
+                             Text="{Binding Timeout}"
+                             ToolTip.Tip="{x:Static t:ToolTips.Timeout}" />
+                    <CheckBox Content="--perf"
+                              IsChecked="{Binding Perf}"
+                              Margin="12,0,0,0"
+                              ToolTip.Tip="{x:Static t:ToolTips.Perf}" />
+                  </StackPanel>
+                </StackPanel>
+              </HeaderedContentControl>
+
+              <!-- MTP / reasoning / server -->
+              <HeaderedContentControl Header="MTP / reasoning / server">
+                <StackPanel Margin="0,3,0,0">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Хост:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <TextBox Width="130"
+                             Text="{Binding Host}"
+                             VerticalContentAlignment="Center"
+                             ToolTip.Tip="{x:Static t:ToolTips.Host}" />
+                    <TextBlock Text="Порт:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="120"
+                             Text="{Binding Port}"
+                             ToolTip.Tip="{x:Static t:ToolTips.Port}" />
+                  </StackPanel>
+
+                  <!-- Возможность — свой раскрываемый контейнер; в модели отсутствует — не показывается. -->
+                  <Expander Header="MTP (draft-mtp)" IsExpanded="True" Margin="0,6,0,0">
+                    <StackPanel Margin="0,3,0,0">
+                      <StackPanel Orientation="Horizontal">
+                        <CheckBox Content="включить"
+                                  IsChecked="{Binding MtpChecked}"
+                                  ToolTip.Tip="{Binding MtpToolTip}" />
+                        <TextBlock Text="draft max:"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0,6,0" />
+                        <TextBox Width="60"
+                                 Text="{Binding DraftMax}"
+                                 IsEnabled="{Binding IsMtpControlsEnabled}"
+                                 ToolTip.Tip="{x:Static t:ToolTips.DraftMax}" />
+                        <TextBlock Text="min:"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0,6,0" />
+                        <TextBox Width="60"
+                                 Text="{Binding DraftMin}"
+                                 IsEnabled="{Binding IsMtpControlsEnabled}"
+                                 ToolTip.Tip="{x:Static t:ToolTips.DraftMin}" />
+                        <TextBlock Text="p-min:"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0,6,0" />
+                        <TextBox Width="90"
+                                 Text="{Binding DraftP}"
+                                 IsEnabled="{Binding IsMtpControlsEnabled}"
+                                 ToolTip.Tip="{x:Static t:ToolTips.DraftP}" />
+                      </StackPanel>
+                      <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="draft KV K:"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,6,0" />
+                        <ComboBox Width="80"
+                                  ItemsSource="{Binding KvOptions}"
+                                  SelectedItem="{Binding DraftK}"
+                                  IsEnabled="{Binding IsMtpControlsEnabled}"
+                                  ToolTip.Tip="{x:Static t:ToolTips.DraftKv}" />
+                        <TextBlock Text="V:"
+                                   VerticalAlignment="Center"
+                                   Margin="10,0,6,0" />
+                        <ComboBox Width="80"
+                                  ItemsSource="{Binding KvOptions}"
+                                  SelectedItem="{Binding DraftV}"
+                                  IsEnabled="{Binding IsMtpControlsEnabled}"
+                                  ToolTip.Tip="{x:Static t:ToolTips.DraftKv}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Expander>
+
+                  <Expander Header="Reasoning (рассуждения)" IsExpanded="True" Margin="0,6,0,0">
+                    <StackPanel Margin="0,3,0,0">
+                      <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="reasoning:"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,6,0" />
+                        <ComboBox Width="90"
+                                  ItemsSource="{Binding ReasoningModeOptions}"
+                                  SelectedItem="{Binding ReasoningMode}"
+                                  ToolTip.Tip="{x:Static t:ToolTips.Reasoning}" />
+                        <TextBlock Text="budget (0 → без лимита):"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0,6,0" />
+                        <TextBox Width="100"
+                                 Text="{Binding ReasonBudget}"
+                                 IsEnabled="{Binding IsReasoningControlsEnabled}"
+                                 ToolTip.Tip="{x:Static t:ToolTips.ReasonBudget}" />
+                      </StackPanel>
+                      <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="budget message:"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,6,0" />
+                        <!-- Общий список сообщений (все модели) + можно вписать новое. -->
+                        <ComboBox Width="480"
+                                 IsEditable="True"
+                                 ItemsSource="{Binding ReasonBudgetMessages}"
+                                 Text="{Binding ReasonBudgetMessage}"
+                                 VerticalContentAlignment="Center"
+                                 IsEnabled="{Binding IsReasoningControlsEnabled}"
+                                 ToolTip.Tip="{x:Static t:ToolTips.ReasonBudgetMessage}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Expander>
+
+                  <Expander Header="Instrument (--jinja)" IsExpanded="True" Margin="0,6,0,0">
+                    <StackPanel Orientation="Horizontal">
+                      <CheckBox Content="--jinja (родной chat-шаблон)"
+                                IsChecked="{Binding JinjaChecked}"
+                                ToolTip.Tip="{x:Static t:ToolTips.JinjaFlag}" />
+                      <TextBlock Text="{Binding InfoToolsFull}"
+                                 Margin="12,0,0,0"
+                                 VerticalAlignment="Center"
+                                 Foreground="#666666"
+                                 ToolTip.Tip="{x:Static t:ToolTips.ToolsDetect}" />
+                    </StackPanel>
+                  </Expander>
+                </StackPanel>
+              </HeaderedContentControl>
+
+              <!-- Multimodal: mmproj-файл -->
+              <HeaderedContentControl Header="Multimodal (--mmproj)">
+                <StackPanel Margin="0,3,0,0">
+                  <StackPanel Orientation="Horizontal">
+                    <CheckBox Content="Включить multimodal"
+                              IsChecked="{Binding MmprojChecked}"
+                              IsEnabled="{Binding MmprojAvailable}"
+                              ToolTip.Tip="{x:Static t:ToolTips.MmprojEnabled}" />
+                    <TextBlock Text="mmproj-файл:"
+                               VerticalAlignment="Center"
+                               Margin="16,0,6,0" />
+                    <ComboBox Width="360"
+                              ItemsSource="{Binding MmprojFiles}"
+                              SelectedItem="{Binding SelectedMmproj}"
+                              IsEnabled="{Binding MmprojAvailable}"
+                              ToolTip.Tip="{x:Static t:ToolTips.MmprojCombo}" />
+                  </StackPanel>
+                </StackPanel>
+              </HeaderedContentControl>
+
+              <!-- Sampling -->
+              <HeaderedContentControl Header="Sampling — параметры разработчика (дефолты сервера)">
+                <StackPanel Margin="0,3,0,0">
+                  <CheckBox Content="Передавать sampling-parameters в команду"
+                            IsChecked="{Binding SamplingEnabled}"
+                            ToolTip.Tip="{x:Static t:ToolTips.SamplingEnabled}" />
+                  <StackPanel Orientation="Horizontal" IsEnabled="{Binding SamplingEnabled}">
+                    <TextBlock Text="temp:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <TextBox Width="80"
+                             Text="{Binding Temp}"
+                             ToolTip.Tip="{x:Static t:ToolTips.Temp}" />
+                    <TextBlock Text="top-k:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="80"
+                             Text="{Binding TopK}"
+                             ToolTip.Tip="{x:Static t:ToolTips.TopK}" />
+                    <TextBlock Text="top-p:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="80"
+                             Text="{Binding TopP}"
+                             ToolTip.Tip="{x:Static t:ToolTips.TopP}" />
+                    <TextBlock Text="min-p:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="80"
+                             Text="{Binding MinP}"
+                             ToolTip.Tip="{x:Static t:ToolTips.MinP}" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" IsEnabled="{Binding SamplingEnabled}">
+                    <TextBlock Text="repeat-penalty:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <TextBox Width="80"
+                             Text="{Binding RepeatPenalty}"
+                             ToolTip.Tip="{x:Static t:ToolTips.RepeatPenalty}" />
+                    <TextBlock Text="repeat-last-n:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="90"
+                             Text="{Binding RepeatLastN}"
+                             ToolTip.Tip="{x:Static t:ToolTips.RepeatLastN}" />
+                    <TextBlock Text="presence-penalty:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="80"
+                             Text="{Binding PresencePenalty}"
+                             ToolTip.Tip="{x:Static t:ToolTips.PresencePenalty}" />
+                    <TextBlock Text="frequency-penalty:"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="80"
+                             Text="{Binding FrequencyPenalty}"
+                             ToolTip.Tip="{x:Static t:ToolTips.FrequencyPenalty}" />
+                    <TextBlock Text="seed (-1=случайный):"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0" />
+                    <TextBox Width="110"
+                             Text="{Binding Seed}"
+                             ToolTip.Tip="{x:Static t:ToolTips.Seed}" />
+                  </StackPanel>
+                </StackPanel>
+              </HeaderedContentControl>
+
+              <!-- Presets -->
+              <HeaderedContentControl Header="Presets">
+                <StackPanel Margin="0,3,0,0">
+                  <WrapPanel>
+                    <Button Content="V100 ONLY — новая модель"
+                            Command="{Binding PresetV100OnlyCommand}"
+                            Margin="0,0,6,6" Padding="8,4" />
+                    <Button Content="RTX ONLY — без V100"
+                            Command="{Binding PresetRtxOnlyCommand}"
+                            Margin="0,0,6,6" Padding="8,4" />
+                    <Button Content="SAFE — RTX резерв 3.0 GiB"
+                            Command="{Binding PresetSafeCommand}"
+                            Margin="0,0,6,6" Padding="8,4" />
+                    <Button Content="BALANCED — 2.5 GiB"
+                            Command="{Binding PresetBalancedCommand}"
+                            Margin="0,0,6,6" Padding="8,4" />
+                    <Button Content="AGGRESSIVE — 2.0 GiB"
+                            Command="{Binding PresetAggressiveCommand}"
+                            Margin="0,0,6,6" Padding="8,4" />
+                  </WrapPanel>
+                  <WrapPanel>
+                    <Button Content="Q8 SAFE — меньше batch"
+                            Command="{Binding PresetQ8Command}"
+                            Margin="0,0,6,6" Padding="8,4" />
+                    <Button Content="V100 ubatch=64 EXP"
+                            Command="{Binding PresetV100Command}"
+                            Margin="0,0,6,6" Padding="8,4" />
+                  </WrapPanel>
+                </StackPanel>
+              </HeaderedContentControl>
+
+            </StackPanel>
+          </ScrollViewer>
+
+          <!-- ======== ПРЯЯ КОЛОНКА: ИНФО / КОМАНда ======== -->
+          <ScrollViewer VerticalScrollBarVisibility="Auto"
+                        Grid.Column="1">
+            <StackPanel>
+
+              <HeaderedContentControl Header="Информация о модели">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="135" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                  </Grid.RowDefinitions>
+                  <TextBlock Grid.Row="0" Grid.Column="0" Text="Архитектура:" FontWeight="SemiBold" />
+                  <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding InfoArch}" />
+
+                  <TextBlock Grid.Row="1" Grid.Column="0" Text="Блоков:" FontWeight="SemiBold" />
+                  <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding InfoBlocks}" />
+
+                  <TextBlock Grid.Row="2" Grid.Column="0" Text="Макс ctx:" FontWeight="SemiBold" />
+                  <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding InfoMaxCtx}" />
+
+                  <TextBlock Grid.Row="3" Grid.Column="0" Text="GGUF:" FontWeight="SemiBold" />
+                  <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding InfoFileSize}" />
+
+                  <TextBlock Grid.Row="4" Grid.Column="0" Text="MTP:" FontWeight="SemiBold" ToolTip.Tip="{x:Static t:ToolTips.MtpInfoRow}" />
+                  <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding InfoMtp}" TextWrapping="Wrap" ToolTip.Tip="{x:Static t:ToolTips.MtpInfoRow}" />
+
+                  <TextBlock Grid.Row="5" Grid.Column="0" Text="Multimodal:" FontWeight="SemiBold" ToolTip.Tip="{x:Static t:ToolTips.MultimodalRow}" />
+                  <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding InfoMultimodal}" ToolTip.Tip="{x:Static t:ToolTips.MultimodalRow}" />
+
+                  <TextBlock Grid.Row="6" Grid.Column="0" Text="Рассуждения:" FontWeight="SemiBold" ToolTip.Tip="{x:Static t:ToolTips.ReasoningRow}" />
+                  <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding InfoReasoning}" ToolTip.Tip="{x:Static t:ToolTips.ReasoningRow}" />
+
+                  <TextBlock Grid.Row="7" Grid.Column="0" Text="Instrument:" FontWeight="SemiBold" ToolTip.Tip="{Binding InfoToolsTooltip}" />
+                  <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding InfoTools}" ToolTip.Tip="{Binding InfoToolsTooltip}" />
+
+                  <TextBlock Grid.Row="8" Grid.Column="0" Text="Файл:" FontWeight="SemiBold" />
+                  <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding InfoFileName}" />
+
+                  <TextBlock Grid.Row="9" Grid.Column="0" Text="Квантование:" FontWeight="SemiBold" />
+                  <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding InfoQuantization}" />
+                </Grid>
+              </HeaderedContentControl>
+
+              <HeaderedContentControl Header="GPU">
+                <StackPanel Margin="0,3,0,0">
+                  <TextBlock Text="{Binding GpuSummaryText}"
+                             TextWrapping="Wrap"
+                             Foreground="#666666"
+                             ToolTip.Tip="{x:Static t:ToolTips.RefreshGpu}" />
+                  <TextBlock Text="{Binding FitTargetsText}"
+                             Foreground="#666666"
+                             Margin="0,4,0,0"
+                             ToolTip.Tip="{x:Static t:ToolTips.FitTargets}" />
+                </StackPanel>
+              </HeaderedContentControl>
+
+              <HeaderedContentControl Header="Распределение слоёв (оценка)">
+                <TextBox FontFamily="Consolas, 'Cascadia Mono', 'Courier New'" FontSize="12"
+                         Text="{Binding LayerEstimateText}"
+                         TextWrapping="Wrap"
+                         MinHeight="96"
+                         ToolTip.Tip="{x:Static t:ToolTips.LayerEstimate}" />
+              </HeaderedContentControl>
+
+              <HeaderedContentControl Header="Строка запуска">
+                <StackPanel Margin="0,3,0,0">
+                  <TextBox FontFamily="Consolas, 'Cascadia Mono', 'Courier New'" FontSize="12"
+                           Text="{Binding LaunchCommand}"
+                           TextWrapping="Wrap"
+                           MinHeight="120"
+                           MaxHeight="300" />
+                  <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Button Content="Собрать команду"
+                            Command="{Binding BuildCommandCommand}"
+                            Padding="10,4"
+                            ToolTip.Tip="{x:Static t:ToolTips.BuildButton}" />
+                    <Button Content="Копировать в буфер"
+                            Command="{Binding CopyCommandCommand}"
+                            Padding="10,4"
+                            Margin="8,0,0,0"
+                            ToolTip.Tip="{x:Static t:ToolTips.CopyButton}" />
+                    <TextBlock Text="{Binding CopyStatusText}"
+                               Foreground="#666666"
+                               VerticalAlignment="Center"
+                               Margin="10,0,0,0" />
+                  </StackPanel>
+                </StackPanel>
+              </HeaderedContentControl>
+
+              <HeaderedContentControl Header="Предупреждения">
+                <ItemsControl ItemsSource="{Binding Warnings}"/>
+              </HeaderedContentControl>
+
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+  </DockPanel>
+</UserControl>
