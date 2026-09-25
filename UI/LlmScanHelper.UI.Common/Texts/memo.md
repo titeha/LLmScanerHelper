@@ -2,8 +2,10 @@
 
 Сканер GGUF + генератор параметров llama-server для V100 + desktop RTX,
 безопасного AUTO --fit, MTP и ручного лабораторного режима.
-Запуск: LlmScanHelper.exe (WPF). Параметры сохраняются в settings.json
-рядом с exe (переносимый режим, по-модельные профили).
+Запуск: LLMScanHelper — WPF-сборка на Windows, Avalonia-сборка на Linux
+(те же Core + UI.Common, различается только оболочка). Параметры сохраняются
+в settings.json рядом с исполняемым файлом (переносимый режим,
+по-модельные профили).
 
 Синтаксис намеренно консервативный: приложение — прямой потомок
 LINQPad-скрипта v3, логика формул и флагов сохранена 1:1.
@@ -166,13 +168,14 @@ TickFrequency — WPF это не касается.)
 ## Карта достройки (куда лезть, чтобы добавить своё)
 
 ```
-новый флаг llama-server   -> ViewModels/MainViewModel.Output.cs, BuildCommand()
-новый параметр модели     -> Models/GgufInfo.cs, чтение meta
-новый контрол             -> Views/PanelTabView.xaml (числа: mah:NumericUpDown)
-новые предупреждения      -> ViewModels/MainViewModel.Output.cs, BuildWarnings()
-подсказки (tooltip)       -> Texts/ToolTips.cs
-ссылки в тултипах         -> Controls/ToolTipLinker.cs
-сохранение параметров     -> Models/Settings/SettingsStore.cs
-каталоги моделей          -> Views/SettingsWindow.xaml (окно «Настройки» из заголовка)
-памятка                   -> Views/HelpWindow.xaml + Texts/memo.md (окно «Справка» из заголовка)
+новый флаг llama-server   -> Core/LlmScanHelper.Core/Command/LlamaServerCommandBuilder.cs
+новый параметр модели     -> Core/LlmScanHelper.Core/GgufInfo.cs, чтение meta
+новый контрол             -> UI/LlmScanHelper.UI.Windows/Views/PanelTabView.xaml И
+                             UI/LlmScanHelper.UI.Linux/Views/PanelTabView.axaml (обе оболочки)
+новые предупреждения      -> Core/LlmScanHelper.Core/Command/LlamaServerCommandBuilder.cs, BuildWarnings()
+подсказки (tooltip)       -> UI/LlmScanHelper.UI.Common/Texts/ToolTips.cs
+ссылки в тултипах         -> UI/LlmScanHelper.UI.Windows/Controls/ToolTipLinker.cs (только WPF)
+сохранение параметров     -> Core/LlmScanHelper.Core/Settings/SettingsStore.cs
+каталоги моделей          -> SettingsWindow (окно «Настройки» из заголовка; обе оболочки)
+памятка                   -> HelpWindow + UI/LlmScanHelper.UI.Common/Texts/memo.md (окно «Справка» из заголовка)
 ```

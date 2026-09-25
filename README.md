@@ -1,4 +1,4 @@
-# LLM Scan Helper v5 (WPF / MVVM)
+# LLM Scan Helper v5 (MVVM; WPF + Avalonia)
 
 Сканер GGUF + генератор параметров `llama-server` для пары V100 + desktop RTX:
 безопасный AUTO `--fit`, MANUAL-режим, MTP, reasoning, мультимодальность (mmproj),
@@ -20,6 +20,16 @@ dotnet run -c Release --project UI/LlmScanHelper.UI.Windows
 Готовый exe: `artifacts\bin\LLMScanHelper\release\LLMScanHelper.exe`
 (артефакты сборки — в корневом `artifacts/`, см. `Directory.Build.props`).
 
+В том же решении — **Linux-версия на Avalonia** (те же Core + UI.Common,
+другая оболочка). Кросс-сборка с Windows:
+
+```cmd
+dotnet build -c Release UI/LlmScanHelper.UI.Linux -r linux-x64 --self-contained false
+```
+
+Результат: `artifacts\bin\LlmScanHelper.UI.Linux\release_linux-x64\` (исполняемый
+`LLMScanHelper` + dll; запускать на Linux с .NET 10 runtime).
+
 ## Открытие в IDE
 
 - **Visual Studio 2022** (17.12+, рабочая нагрузка «Разработка классических приложений .NET»):
@@ -32,10 +42,11 @@ dotnet run -c Release --project UI/LlmScanHelper.UI.Windows
 
 ## Что где
 
-Решение `LLMScanHelper.sln` — 4 проекта (после расщепления Core/UI):
+Решение `LLMScanHelper.sln` — 5 проектов (после расщепления Core/UI):
 **Core** (`Core/LlmScanHelper.Core/`, net10.0) — доменная логика, без UI;
 **UI.Common** (`UI/LlmScanHelper.UI.Common/`, net10.0) — MainViewModel и абстракции, без WPF;
-**UI.Windows** (`UI/LlmScanHelper.UI.Windows/`, net10.0-windows) — WPF-оболочка;
+**UI.Windows** (`UI/LlmScanHelper.UI.Windows/`, net10.0-windows) — WPF-оболочка (Windows);
+**UI.Linux** (`UI/LlmScanHelper.UI.Linux/`, net10.0) — Avalonia-оболочка (Linux);
 **Tests** (`tests/LLMScanHelper.Tests/`, net10.0) — xUnit (23 теста).
 
 | Файл | Назначение |
@@ -44,6 +55,10 @@ dotnet run -c Release --project UI/LlmScanHelper.UI.Windows
 | `Core/LlmScanHelper.Core/GgufScannerService.cs` | обход дерева моделей, издатель, поиск mmproj |
 | `Core/LlmScanHelper.Core/GpuService.cs` | `llama-server --list-devices` (парсинг CUDA-id и свободной VRAM) |
 | `Core/LlmScanHelper.Core/LayerEstimator.cs` | грубая оценка раскладки блоков (веса+KV) по картам |
+| `Core/LlmScanHelper.Core/Command/LlamaServerCommandBuilder.cs` | строка запуска llama-server + список предупреждений (`Build`/`BuildWarnings`) — единственный источник флагов |
+| `Core/LlmScanHelper.Core/Command/LlamaServerParams.cs` | объект-параметры для сборщика: все поля команды в одном месте |
+| `Core/LlmScanHelper.Core/Gpu/FitTargets.cs` | математика `--fit-target`: разбор устройств, резервы GiB→MiB |
+| `Core/LlmScanHelper.Core/Estimation/LayerEstimateFormatter.cs` | текстовое форматирование оценки распределения слоёв |
 | `Core/LlmScanHelper.Core/AliasBuilder.cs` | генератор алиаса из имени файла (убирает квант-теги) |
 | `Core/LlmScanHelper.Core/AppDefaults.cs` | константы по умолчанию (корень моделей, контекст, порт, хост) |
 | `Core/LlmScanHelper.Core/ModelTypes.cs` | доменные типы: ModelEntry, MmprojEntry, GpuDeviceInfo, GpuQueryResult |
@@ -56,9 +71,9 @@ dotnet run -c Release --project UI/LlmScanHelper.UI.Windows
 | `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.Catalogs.cs` | корневые каталоги моделей |
 | `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.Persistence.cs` | сохранение/загрузка настроек (дебаунс через Debouncer) |
 | `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.Output.cs` | сборка команды, предупреждения, оценка слоёв, буфер обмена |
-| `UI/LlmScanHelper.UI.Common/Services/IClipboard.cs`, `IUiWindows.cs`, `IFolderPicker.cs` | абстракции UI; WPF-реализации — в `UI.Windows/Platform/` |
+| `UI/LlmScanHelper.UI.Common/Services/IClipboard.cs`, `IUiWindows.cs`, `IFolderPicker.cs` | абстракции UI (`IFolderPicker` — async-only: `PickFolderAsync`); WPF-реализации — `UI.Windows/Platform/`, Avalonia-реализации — `UI.Linux/Platform/` |
 | `UI/LlmScanHelper.UI.Common/Services/Debouncer.cs` | дебаунс (сохранение настроек, индикатор копирования) |
-| `UI/LlmScanHelper.UI.Common/Texts/memo.md` | памятка «ПОЧЕМУ ТАК» (Markdown, вкладка «Памятка»; парсер — позже) |
+| `UI/LlmScanHelper.UI.Common/Texts/memo.md` | памятка «ПОЧЕМУ ТАК» (Markdown, показывается обычным текстом в окне «Справка») |
 | `UI/LlmScanHelper.UI.Common/Texts/ToolTips.cs` | popup-подсказки по всем параметрам (зачем/влияет/дока) |
 | `UI/LlmScanHelper.UI.Windows/App.xaml`, `App.xaml.cs` | старт приложения: темы MahApps, финальное сохранение при выходе |
 | `UI/LlmScanHelper.UI.Windows/Windows/MainWindow.xaml` | каркас окна: панель (PanelTabView) + кнопки в заголовке (Настройки/Справка) |
@@ -70,6 +85,12 @@ dotnet run -c Release --project UI/LlmScanHelper.UI.Windows
 | `UI/LlmScanHelper.UI.Windows/Controls/TextBoxHelpers.cs` | attached-поведение: коммит по Enter (TextBox / редактируемый ComboBox) |
 | `UI/LlmScanHelper.UI.Windows/Controls/ToolTipLinker.cs` | кликабельные ссылки в тултипах (перехват «сквозного» клика) |
 | `UI/LlmScanHelper.UI.Windows/Platform/WpfClipboard.cs`, `WpfUiWindows.cs`, `WpfFolderPicker.cs` | WPF-реализации абстракций из UI.Common |
+| `UI/LlmScanHelper.UI.Linux/Program.cs`, `App.axaml(.cs)` | старт Avalonia: Fluent-тема, desktop-lifetime, финальное сохранение при выходе |
+| `UI/LlmScanHelper.UI.Linux/MainWindow.axaml(.cs)` | главное окно: `DataContext = MainViewModel` (Avalonia-реализации), `InitializeAsync`/`FlushPendingSave` |
+| `UI/LlmScanHelper.UI.Linux/Views/PanelTabView.axaml` | Avalonia-перенос основной панели (параметры, инфо, строка запуска) |
+| `UI/LlmScanHelper.UI.Linux/Views/SettingsTabView.axaml`, `Windows/SettingsWindow.axaml` | окно «Настройки» (каталоги моделей) |
+| `UI/LlmScanHelper.UI.Linux/Views/MemoTabView.axaml`, `Windows/HelpWindow.axaml` | окно «Справка» (памятка; читается из встроенного `Texts/memo.md` через `avares://`) |
+| `UI/LlmScanHelper.UI.Linux/Platform/AvaloniaClipboard.cs`, `AvaloniaUiWindows.cs`, `AvaloniaFolderPicker.cs` | Avalonia-реализации абстракций из UI.Common |
 | `UI/LlmScanHelper.UI.Windows/Assets/app.ico` / `app-icon.png` | иконка приложения (exe и окно) |
 
 ## Параметры
