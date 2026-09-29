@@ -20,6 +20,55 @@ namespace LlmScanHelper.Models
       public List<ModelEntry> Models { get; init; } = new();
 
       public string? Error { get; init; }
+
+      // Нефатальные предупреждения (например, не удалось прочитать один из каталогов).
+      // Модели из успешно прочитанных каталогов всё равно возвращаются.
+      public List<string> Warnings { get; init; } = new();
+    }
+
+    /// <summary>Сканирует все каталоги и объединяет найденные модели (логика «и»).
+    /// Пустые/пробельные каталоги пропускаются. Ошибка чтения одного каталога не скрывает
+    /// модели, успешно найденные в остальных — они попадают в Warnings.
+    /// <see cref="ScanResult.Error"/> устанавливается, только если не задано ни одного
+    /// непустого каталога или ни один каталог не прочитался.</summary>
+    public static ScanResult ScanCatalogs(IEnumerable<string>? roots)
+    {
+      var models = new List<ModelEntry>();
+      var warnings = new List<string>();
+      var errors = new List<string>();
+      bool anyRoot = false;
+      bool readable = false;
+
+      foreach (var root in roots ?? Enumerable.Empty<string>())
+      {
+        if (string.IsNullOrWhiteSpace(root)) continue;
+        anyRoot = true;
+        var res = Scan(root);
+        if (res.Error != null)
+        {
+          warnings.Add(root + ": " + res.Error);
+          errors.Add(root + ": " + res.Error);
+        }
+        else
+        {
+          readable = true;
+          models.AddRange(res.Models);
+        }
+      }
+
+      if (!anyRoot)
+        return new ScanResult { Error = "Каталог с моделями не указан" };
+
+      models.Sort((x, y) =>
+      {
+        int c = string.Compare(x.DisplayName, y.DisplayName, StringComparison.OrdinalIgnoreCase);
+        return c != 0 ? c : string.Compare(x.FullPath, y.FullPath, StringComparison.OrdinalIgnoreCase);
+      });
+
+      if (!readable && errors.Count > 0)
+        return new ScanResult { Error = "Не прочитать каталоги моделей: " + string.Join("; ", errors) };
+
+      return new ScanResult { Models = models, Warnings = warnings };
     }
 
     public static ScanResult Scan(string root)

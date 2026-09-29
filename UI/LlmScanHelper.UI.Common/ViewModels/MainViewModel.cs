@@ -291,11 +291,12 @@ namespace LlmScanHelper.ViewModels
     private async Task ScanAsync()
     {
       StatusText = "Сканирование моделей...";
-      var res = await Task.Run(() => GgufScannerService.Scan(SelectedCatalog));
+      // Логика «и»: сканируем все каталоги и объединяем найденные модели.
+      var res = await Task.Run(() => GgufScannerService.ScanCatalogs(Catalogs));
 
       if (res.Error != null)
       {
-        StatusText = "Не прочитать папку моделей: " + res.Error;
+        StatusText = res.Error;
         return;
       }
 
@@ -303,9 +304,12 @@ namespace LlmScanHelper.ViewModels
       foreach (var m in res.Models)
         Models.Add(m);
 
+      if (res.Warnings.Count > 0)
+        StatusText = "Сканирование завершено с предупреждениями: " + string.Join("; ", res.Warnings);
+
       if (Models.Count == 0)
       {
-        StatusText = "GGUF не найдены в " + SelectedCatalog;
+        StatusText = "GGUF не найдены ни в одном каталоге";
         return;
       }
 
