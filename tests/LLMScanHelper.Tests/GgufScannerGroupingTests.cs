@@ -267,4 +267,91 @@ public class GgufScannerGroupingTests
         // сортировка по DisplayName
         Assert.Equal(new[] { "aaa", "bbb", "ccc" }, res.Models.Select(m => m.FileName));
     }
+
+    // ===================== сканирование нескольких каталогов (логика «и») =====================
+
+    [Fact]
+    public void Скан_объединяет_модели_из_нескольких_каталогов()
+    {
+        using var a = new TempDir();
+        using var b = new TempDir();
+        MakeFile(a.Dir, "alpha.gguf", 4);
+        MakeFile(b.Dir, "beta.gguf", 8);
+
+        var res = GgufScannerService.Scan(new[] { a.Dir, b.Dir });
+
+        Assert.Null(res.Error);
+        Assert.Empty(res.Warnings);
+        Assert.Equal(2, res.Models.Count);
+
+        // все модели из обоих каталогов на месте
+        Assert.Contains(res.Models, m => m.FileName == "alpha" && m.FullPath == Path.Combine(a.Dir, "alpha.gguf"));
+        Assert.Contains(res.Models, m => m.FileName == "beta" && m.FullPath == Path.Combine(b.Dir, "beta.gguf"));
+
+        // объединённый список отсортирован по DisplayName
+        Assert.Equal(new[] { "alpha", "beta" }, res.Models.Select(m => m.FileName));
+    }
+
+    [Fact]
+    public void Скан_объединяет_наборы_шардов_из_разных_каталогов_отдельно()
+    {
+        using var a = new TempDir();
+        using var b = new TempDir();
+        // один и тот же stem разложен по двум каталогам — это два разных набора.
+        for (int i = 1; i <= 2; i++) MakeFile(a.Dir, $"model-{i:D5}-of-{2:D5}.gguf", i);
+        for (int i = 1; i <= 2; i++) MakeFile(b.Dir, $"model-{i:D5}-of-{2:D5}.gguf", i + 10);
+
+        var res = GgufScannerService.Scan(new[] { a.Dir, b.Dir });
+
+        Assert.Null(res.Error);
+        Assert.Equal(2, res.Models.Count);
+        foreach (var m in res.Models)
+        {
+            Assert.True(m.IsSplit);
+            Assert.Equal("model", m.FileName);
+            Assert.Equal(2, m.ShardCount);
+        }
+        // пути из обоих каталогов представлены: 2 модели × по 2 шарда = 4 уникальных пути
+        Assert.Equal(4, res.Models.SelectMany(m => m.ShardPaths).Distinct().Count());
+    }
+
+    [Fact]
+    public void Скан_пропускает_пустые_и_пробельные_каталоги()
+    {
+        using var a = new TempDir();
+        MakeFile(a.Dir, "alpha.gguf", 4);
+
+        var res = GgufScannerService.Scan(new[] { "", "   ", a.Dir });
+
+        Assert.Null(res.Error);
+        Assert.Single(res.Models);
+        Assert.Equal("alpha", res.Models[0].FileName);
+    }
+
+    [Fact]
+    public void Скан_без_каталогов_даёт_ошибку()
+    {
+        var res = GgufScannerService.Scan(new string[0]);
+
+        Assert.NotNull(res.Error);
+        Assert.Empty(res.Models);
+    }
+
+    [Fact]
+    public void Скан_предупреждает_о_непрочитанном_каталоге_но_возвращает_модели()
+    {
+        using var a = new TempDir();
+        MakeFile(a.Dir, "alpha.gguf", 4);
+        string missing = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "no-such-folder-" + Guid.NewGuid().ToString("N"));
+
+        var res = GgufScannerService.Scan(new[] { a.Dir, missing });
+
+        // модели из рабочего каталога не теряются...
+        Assert.Single(res.Models);
+        Assert.Equal("alpha", res.Models[0].FileName);
+        // ...
+        // ошибка несуществующего каталога — в предупреждениях
+        Assert.Equal(1, res.Warnings.Count);
+        Assert.Contains(missing, res.Warnings[0]);
+    }
 }
