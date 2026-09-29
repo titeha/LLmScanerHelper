@@ -13,11 +13,26 @@ namespace LlmScanHelper.Models
     Yes = 2        // chat-шаблон содержит обработку tools/tool_calls
   }
 
+  /// <summary>
+  /// Тензор файла GGUF в том виде, в котором он лежит в tensor-info.
+  /// Размер (<see cref="Bytes"/>) считается по формуле ggml через <see cref="GgmlTypes.Bytes"/>,
+  /// а не по дельте offset'ов (дельта включает padding и хвост файла).
+  /// Для типа вне таблицы S1 <see cref="Bytes"/> = 0 (размер неизвестен).
+  /// </summary>
+  internal readonly record struct GgufTensorInfo(string Name, long[] Dims, uint TypeId, long Offset, long Bytes);
+
+  /// <summary>Состояние набора шардов после агрегации (S4).</summary>
+  public enum SplitStatus
+  {
+    NotApplicable = 0, // одиночный файл
+    Complete = 1,      // все шарды найдены, расхождений нет
+    Incomplete = 2,    // не хватает шардов из split.count
+    Mismatch = 3       // split.no / дубликаты тензоров / контрольные числа
+  }
+
   // ========================== Парсер GGUF ==========================
-  // Тензорные offsets в GGUF относительны к началу data-section, поэтому
-  // для последнего тензора учитываем выровненный dataStart. Это исправляет
-  // старое завышение размера последнего тензора (особенно неприятно, когда
-  // последним оказывался MTP/nextn блок).
+  // Размер тензора — по таблице S1, а не по дельте offset'ов; границы data section
+  // проверяются строгим инвариантом padding'а. Список тензоров доступен через Tensors.
   public sealed class GgufInfo
   {
     public string Arch = "llama";
@@ -37,9 +52,36 @@ namespace LlmScanHelper.Models
     public long[] LayerSize = Array.Empty<long>();
     public long FileSize;
 
+    // S2: честный учёт байт и контроль целостности.
+    public long UnknownBytes;         // известный тип, но имя вне Layer/Embd/MTP
+    public int UnknownTensors;        // число таких тензоров
+    public int UnknownTypeTensors;    // тензоры с типом вне таблицы S1 (размер неизвестен)
+    public string IntegrityNote = ""; // пусто = инвариант padding'а соблюдён
+
+    // Тензоры файла (для S4/S5) и границы data section.
+    internal IReadOnlyList<GgufTensorInfo> Tensors = Array.Empty<GgufTensorInfo>();
+    internal long HeaderEnd;
+    internal long DataStart;
+
+    // S4: агрегация шардов.
+    public SplitStatus SplitStatus = SplitStatus.NotApplicable;
+    public IReadOnlyList<string> MissingShardPaths = Array.Empty<string>();
+    public long PayloadBytes;          // Σ nbytes (по агрегату)
+    public bool HasSplitKeys;          // в метаданных был split.count
+    public int SplitNo = -1;           // значение split.no файла (0-based)
+    public int SplitCount = -1;        // значение split.count
+    public int SplitTensorsCount = -1; // значение split.tensors.count
+    public int FileType = -1;          // general.file_type (llama_ftype), -1 если ключа нет
+
     public bool HasMtp => MtpSize > 0;
 
-    public static GgufInfo Read(string path)
+    /// <summary>Тонкая обёртка: одиночная модель или агрегат шардов (S4).</summary>
+    public static GgufInfo Read(string path) => GgufModelReader.Read(path);
+
+    /// <summary>
+    /// Разбор одного GGUF-файла (S2). Не агрегирует шарды — для этого <see cref="GgufModelReader"/>.
+    /// </summary>
+    internal static GgufInfo ParseSingle(string path)
     {
       var g = new GgufInfo();
       long fileSize = new FileInfo(path).Length;
@@ -49,7 +91,13 @@ namespace LlmScanHelper.Models
       using (var r = new BinaryReader(fs))
       {
         if (r.ReadUInt32() != 0x46554747) throw new Exception("это не GGUF");
-        r.ReadUInt32(); // version
+
+        uint version = r.ReadUInt32();
+        if (version == 1) throw new Exception("GGUFv1 не поддерживается llama.cpp");
+        if (version == 2) throw new Exception("GGUF v2 не поддерживается");
+        if (version == 0 || version > 3)
+          throw new Exception($"неподдерживаемая версия GGUF: {version} (максимальная поддерживаемая: 3)");
+
         ulong tensorCount = r.ReadUInt64();
         ulong kvCount = r.ReadUInt64();
 
@@ -87,86 +135,180 @@ namespace LlmScanHelper.Models
         // инструменты модели, и парсить её ответы в OpenAI-совместимые tool_calls.
         DetectToolSupport(g, meta);
 
-        var names = new List<string>();
-        var offs = new List<long>();
+        // ---- split.*: контрольные числа набора шардов (S4, §2) ----
+        double splitCount = Num(meta, "split.count", -1);
+        if (splitCount >= 0)
+        {
+          g.HasSplitKeys = true;
+          g.SplitCount = (int)splitCount;
+        }
+        g.SplitNo = (int)Num(meta, "split.no", -1);
+        g.SplitTensorsCount = (int)Num(meta, "split.tensors.count", -1);
+        g.FileType = (int)Num(meta, "general.file_type", -1);
+
+        // ---- general.alignment: строго uint32, не 0 и степень двойки (gguf.cpp:621-635) ----
+        long alignment = 32;
+        if (meta.TryGetValue("general.alignment", out var alv))
+        {
+          if (alv is not uint alu)
+            throw new Exception("general.alignment должен быть uint32");
+          if (alu == 0 || (alu & (alu - 1)) != 0)
+            throw new Exception($"general.alignment = {alu} не является степенью двойки");
+          alignment = alu;
+        }
+
+        // ---- Tensor-info: name / n_dims / ne[n_dims] / type / offset ----
+        var tensors = new List<GgufTensorInfo>((int)Math.Min(tensorCount, 1UL << 20));
+        var tensorNames = new HashSet<string>(StringComparer.Ordinal);
+        long totalNbytes = 0;
 
         for (ulong i = 0; i < tensorCount; i++)
         {
-          names.Add(RStr(r));
+          string name = RStr(r);
+          if (!tensorNames.Add(name))
+            throw new Exception($"дубликат имени тензора: {name}");
+
           uint nd = r.ReadUInt32();
-          for (int d = 0; d < nd; d++) r.ReadUInt64();
-          r.ReadUInt32(); // type
-          ulong offset = r.ReadUInt64();
-          if (offset > long.MaxValue)
-            throw new Exception($"Смещение тензора слишком велико для long: {offset}");
-          offs.Add((long)offset);
+          if (nd > 4)
+            throw new Exception($"тензор {name}: n_dims = {nd} > GGML_MAX_DIMS (4)");
+
+          // dims дополняются единицами (llama.cpp: ne[1..3] = 1, если измерений меньше).
+          var dims = new long[4] { 1, 1, 1, 1 };
+          for (uint d = 0; d < nd; d++)
+          {
+            ulong v = r.ReadUInt64();
+            if (v > long.MaxValue)
+              throw new Exception($"тензор {name}: размерность {v} не помещается в long");
+            dims[d] = (long)v;
+          }
+          CheckElementProduct(name, dims);
+
+          uint typeId = r.ReadUInt32();
+          ulong offsetRaw = r.ReadUInt64();
+          if (offsetRaw > long.MaxValue)
+            throw new Exception($"Смещение тензора слишком велико для long: {offsetRaw}");
+          long offset = (long)offsetRaw;
+
+          bool typeKnown = GgmlTypes.TryGet(typeId, out var typeInfo);
+          long bytes = 0;
+          if (typeKnown)
+          {
+            if (typeInfo.BlckSize == 0 || dims[0] % typeInfo.BlckSize != 0)
+              throw new Exception(
+                $"тензор {name}: ne[0] = {dims[0]} не делится на blck_size ({typeInfo.BlckSize}) типа {typeInfo.Name}");
+            bytes = GgmlTypes.Bytes(dims, typeId);
+          }
+
+          tensors.Add(new GgufTensorInfo(name, dims, typeId, offset, bytes));
+          totalNbytes += bytes;
         }
 
-        long alignment = (long)Num(meta, "general.alignment", 32);
-        if (alignment <= 0) alignment = 32;
-        long dataStart = Align(fs.Position, alignment);
+        long headerEnd = fs.Position;
+        // data section выравнивается только при n_tensors > 0 (gguf.cpp:773).
+        long dataStart = tensorCount > 0 ? Align(headerEnd, alignment) : headerEnd;
+        g.HeaderEnd = headerEnd;
+        g.DataStart = dataStart;
+        g.Tensors = tensors;
 
-        var order = Enumerable.Range(0, names.Count).OrderBy(i => offs[i]).ToList();
-        g.LayerSize = new long[Math.Max(0, g.BlockCount)];
+        long dataSize = fileSize - dataStart;
+        if (dataSize < 0)
+          throw new Exception($"файл оборван: конец заголовка {headerEnd} больше размера файла {fileSize}");
 
-        // индексы слоёв по типам MTP — для «тип» и «сколько токенов предсказывает»
-        var nextnIdx = new HashSet<int>();
-        var mtpIdx = new HashSet<int>();
-        var extraIdx = new HashSet<int>();
+        // ---- offset + nbytes должны лежать в data section ----
+        foreach (var t in tensors)
+          if (t.Offset > dataSize || t.Bytes > dataSize - t.Offset)
+            throw new Exception(
+              $"тензор {t.Name}: offset {t.Offset} + {t.Bytes} выходит за данные файла ({dataSize})");
 
-        for (int j = 0; j < order.Count; j++)
-        {
-          int i = order[j];
-          long absStart = dataStart + offs[i];
-          if (absStart < 0 || absStart > fileSize)
-            throw new Exception($"Смещение тензора {names[i]} выходит за файл: {absStart}/{fileSize}");
+        // ---- строгий инвариант padding'а: Σ nbytes ≤ dataSize ≤ Σ nbytes + n·(align−1) ----
+        long paddingUpper = (long)tensorCount * (alignment - 1);
+        if (dataSize < totalNbytes || dataSize > totalNbytes + paddingUpper)
+          g.IntegrityNote =
+            $"данные {dataSize} Б вне границы [{totalNbytes}, {totalNbytes + paddingUpper}] (Σ nbytes, padding ≤ {paddingUpper})";
 
-          long absEnd = (j + 1 < order.Count)
-            ? dataStart + offs[order[j + 1]]
-            : fileSize;
-
-          long size = absEnd - absStart;
-          if (size < 0)
-            throw new Exception($"Отрицательный размер тензора для {names[i]}");
-
-          string name = names[i];
-          bool isNextn = name.IndexOf("nextn", StringComparison.OrdinalIgnoreCase) >= 0;
-          bool explicitMtp = isNextn ||
-                     name.IndexOf(".mtp.", StringComparison.OrdinalIgnoreCase) >= 0;
-
-          if (explicitMtp)
-          {
-            g.MtpSize += size;
-            var bm = Regex.Match(name, @"^blk\.(\d+)\.");
-            if (bm.Success && int.TryParse(bm.Groups[1].Value, out int bi))
-              (isNextn ? nextnIdx : mtpIdx).Add(bi);
-          }
-          else if (name.StartsWith("token_embd", StringComparison.OrdinalIgnoreCase))
-            g.EmbdSize += size;
-          else
-          {
-            var m = Regex.Match(name, @"^blk\.(\d+)\.");
-            if (m.Success && int.TryParse(m.Groups[1].Value, out int li))
-            {
-              if (li >= 0 && li < g.BlockCount)
-                g.LayerSize[li] += size;
-              else
-              {
-                g.MtpSize += size; // дополнительный blk.N за block_count
-                extraIdx.Add(li);
-              }
-            }
-          }
-        }
-
-        // Тип MTP и число предсказываемых токенов: приоритет nextn > mtp > доп. блоки.
-        // Один слой = один доп. токен за шаг; без индексов слой не распознать (токены = 0).
-        if (nextnIdx.Count > 0) { g.MtpKind = "nextn"; g.MtpTokens = nextnIdx.Count; }
-        else if (mtpIdx.Count > 0) { g.MtpKind = "mtp"; g.MtpTokens = mtpIdx.Count; }
-        else if (extraIdx.Count > 0) { g.MtpKind = "extra"; g.MtpTokens = extraIdx.Count; }
+        // ---- классификация байт по списку тензоров (одиночный файл или агрегат) ----
+        ClassifyTensors(g, tensors);
       }
 
       return g;
+    }
+
+    /// <summary>
+    /// Раскладывает тензоры по слоям / эмбеддингам / MTP и считает нераспознанные байты.
+    /// Используется и для одиночного файла (S2), и для агрегата шардов (S4).
+    /// </summary>
+    internal static void ClassifyTensors(GgufInfo g, IReadOnlyList<GgufTensorInfo> tensors)
+    {
+      g.EmbdSize = 0;
+      g.MtpSize = 0;
+      g.UnknownBytes = 0;
+      g.UnknownTensors = 0;
+      g.UnknownTypeTensors = 0;
+      g.MtpKind = "";
+      g.MtpTokens = 0;
+      g.LayerSize = new long[Math.Max(0, g.BlockCount)];
+
+      // индексы слоёв по типам MTP — для «тип» и «сколько токенов предсказывает»
+      var nextnIdx = new HashSet<int>();
+      var mtpIdx = new HashSet<int>();
+      var extraIdx = new HashSet<int>();
+      long payload = 0;
+
+      foreach (var t in tensors)
+      {
+        payload += t.Bytes;
+        if (!GgmlTypes.TryGet(t.TypeId, out _))
+        {
+          // Тип вне таблицы S1: размер неизвестен, байты не учитываем (отдельный счётчик).
+          g.UnknownTypeTensors++;
+          continue;
+        }
+
+        long size = t.Bytes;
+        string name = t.Name;
+        bool isNextn = name.IndexOf("nextn", StringComparison.OrdinalIgnoreCase) >= 0;
+        bool explicitMtp = isNextn ||
+                   name.IndexOf(".mtp.", StringComparison.OrdinalIgnoreCase) >= 0;
+
+        if (explicitMtp)
+        {
+          g.MtpSize += size;
+          var bm = Regex.Match(name, @"^blk\.(\d+)\.");
+          if (bm.Success && int.TryParse(bm.Groups[1].Value, out int bi))
+            (isNextn ? nextnIdx : mtpIdx).Add(bi);
+        }
+        else if (name.StartsWith("token_embd", StringComparison.OrdinalIgnoreCase))
+          g.EmbdSize += size;
+        else
+        {
+          var m = Regex.Match(name, @"^blk\.(\d+)\.");
+          if (m.Success && int.TryParse(m.Groups[1].Value, out int li))
+          {
+            if (li >= 0 && li < g.BlockCount)
+              g.LayerSize[li] += size;
+            else
+            {
+              g.MtpSize += size; // дополнительный blk.N за block_count
+              extraIdx.Add(li);
+            }
+          }
+          else
+          {
+            // Напр. per_layer_token_embd.* (qwen4exp), output.weight, cls.* —
+            // не слой, не эмбеддинг, не MTP: учитываем явно, не молча.
+            g.UnknownBytes += size;
+            g.UnknownTensors++;
+          }
+        }
+      }
+
+      g.PayloadBytes = payload;
+
+      // Тип MTP и число предсказываемых токенов: приоритет nextn > mtp > доп. блоки.
+      // Один слой = один доп. токен за шаг; без индексов слой не распознать (токены = 0).
+      if (nextnIdx.Count > 0) { g.MtpKind = "nextn"; g.MtpTokens = nextnIdx.Count; }
+      else if (mtpIdx.Count > 0) { g.MtpKind = "mtp"; g.MtpTokens = mtpIdx.Count; }
+      else if (extraIdx.Count > 0) { g.MtpKind = "extra"; g.MtpTokens = extraIdx.Count; }
     }
 
     /// <summary>
@@ -244,6 +386,22 @@ namespace LlmScanHelper.Models
     {
       long rem = x % a;
       return rem == 0 ? x : x + (a - rem);
+    }
+
+    /// <summary>Произведение размерностей не должно переполнять long (gguf.cpp:700-710).</summary>
+    private static void CheckElementProduct(string name, long[] dims)
+    {
+      if (dims[0] == 0 || dims[1] == 0 || dims[2] == 0 || dims[3] == 0) return;
+      try
+      {
+        long p = checked(dims[0] * dims[1]);
+        p = checked(p * dims[2]);
+        p = checked(p * dims[3]);
+      }
+      catch (OverflowException)
+      {
+        throw new Exception($"тензор {name}: произведение размерностей переполняет long");
+      }
     }
 
     private static double Num(Dictionary<string, object> m, string key, double def = 0)

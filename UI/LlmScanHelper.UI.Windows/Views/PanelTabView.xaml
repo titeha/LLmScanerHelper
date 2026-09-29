@@ -22,7 +22,7 @@
             <ComboBox Width="620"
                       ItemsSource="{Binding Models}"
                       SelectedItem="{Binding SelectedModel}"
-                      ToolTip="{x:Static t:ToolTips.ModelCombo}" />
+                      ToolTip="{Binding ModelComboTooltip}" />
             <!-- Компактная кнопка сканирования рядом с ComboBox моделей.
                  Логика — та же ScanCommand (см. MainViewModel). -->
             <Button Padding="4"
@@ -655,6 +655,7 @@
                      <RowDefinition />
                      <RowDefinition /> <!-- File name -->
                      <RowDefinition /> <!-- Quantization -->
+                     <RowDefinition /> <!-- Shard files -->
                    </Grid.RowDefinitions>
                    <Grid.Resources>
                     <Style TargetType="TextBlock">
@@ -676,9 +677,12 @@
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Макс ctx:" FontWeight="SemiBold" />
                     <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding InfoMaxCtx}" />
 
-                    <!-- GGUF -->
+                    <!-- GGUF (размер + не учтённые байты) -->
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="GGUF:" FontWeight="SemiBold" />
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding InfoFileSize}" />
+                    <StackPanel Grid.Row="3" Grid.Column="1">
+                      <TextBlock Text="{Binding InfoFileSize}" />
+                      <TextBlock Text="{Binding InfoUnaccounted}" Foreground="DarkOrange" TextWrapping="Wrap" />
+                    </StackPanel>
 
                     <!-- MTP -->
                     <TextBlock Grid.Row="4" Grid.Column="0" Text="MTP:" FontWeight="SemiBold" ToolTip="{x:Static t:ToolTips.MtpInfoRow}" />
@@ -700,9 +704,16 @@
                     <TextBlock Grid.Row="8" Grid.Column="0" Text="Файл:" FontWeight="SemiBold" />
                     <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding InfoFileName}" />
 
-                    <!-- Квантование -->
-                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Квантование:" FontWeight="SemiBold" />
-                    <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding InfoQuantization}" />
+                    <!-- Квантование (из Core, не KV-кэш) -->
+                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Квантование:" FontWeight="SemiBold" ToolTip="{x:Static t:ToolTips.QuantizationRow}" />
+                    <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding InfoQuantization}" ToolTip="{Binding InfoQuantizationTooltip}" />
+
+                    <!-- Файлы шарда (одичная / multi-file) -->
+                    <TextBlock Grid.Row="10" Grid.Column="0" Text="Файлы шарда:" FontWeight="SemiBold" ToolTip="{x:Static t:ToolTips.ShardInfoRow}" />
+                    <StackPanel Grid.Row="10" Grid.Column="1">
+                      <TextBlock Text="{Binding InfoShards}" />
+                      <TextBlock Text="{Binding InfoShardWarning}" Foreground="DarkOrange" TextWrapping="Wrap" />
+                    </StackPanel>
                 </Grid>
               </GroupBox>
 

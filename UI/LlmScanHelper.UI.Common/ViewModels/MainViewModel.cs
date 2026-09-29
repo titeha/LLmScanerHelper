@@ -3,6 +3,7 @@ using System.Windows.Input;
 
 using LlmScanHelper.Models;
 using LlmScanHelper.Models.Settings;
+using LlmScanHelper.Texts;
 using LlmScanHelper.UI.Services;
 using MvvmUtilites;
 
@@ -115,6 +116,12 @@ namespace LlmScanHelper.ViewModels
         _ = LoadModelAsync(value);
       }
     }
+
+    // Подсказка для комбокса моделей: маркер [draft] означает файл для --model-draft (Q3, S6).
+    public string ModelComboTooltip =>
+      _selectedModel != null && _selectedModel.Kind == ModelKind.Draft
+        ? ToolTips.ModelCombo + "\n\n" + ToolTips.DraftMarker
+        : ToolTips.ModelCombo;
 
     private string _statusText = "Модель не загружена";
     public string StatusText

@@ -196,6 +196,16 @@ public static class LlamaServerCommandBuilder
     if (p.MmprojAvailable && p.MmprojChecked && p.SelectedMmproj != null)
       w.Add($"Мультимодальность включена: проектор {Path.GetFileName(p.SelectedMmproj.FullPath)} (~{p.SelectedMmproj.FileSize / MiB / 1024.0:F1} GiB) загрузится дополнительно. Для чистого benchmark отключи.");
 
+    // Multi-file набор: llama грузит модель только целиком. Без первого/нужного шарда — ошибка runtime.
+    if (g.SplitStatus == SplitStatus.Incomplete || g.SplitStatus == SplitStatus.Mismatch)
+    {
+      string missing = string.Join(", ", g.MissingShardPaths);
+      w.Add(missing.Length > 0
+        ? "Нужен весь набор шардов: " + missing +
+          " — llama-server не загрузит модель, пока не будет на первом шарде (split.no == 0)."
+        : "Набор шардов повреждён (расхождение split.no/контрольных чисел) — llama-server не загрузит модель. Проверьте целостность файлов набора.");
+    }
+
     if (p.Gpus.Count > 0 && p.ModeIndex == 0)
     {
       long freeAfterMargin = 0;

@@ -50,6 +50,22 @@ namespace LlmScanHelper.ViewModels
     private string _infoQuantization = "-";
     public string InfoQuantization { get => _infoQuantization; private set => Set(ref _infoQuantization, value); }
 
+    // Тултип строки «Квантование»: источник значения + bpw + распределение типов + заметки (S6).
+    private string _infoQuantizationTooltip = "";
+    public string InfoQuantizationTooltip { get => _infoQuantizationTooltip; private set => Set(ref _infoQuantizationTooltip, value); }
+
+    // Строка «Файлы шарда»: «1 файл» / «N файлов (shards)» (S6).
+    private string _infoShards = "-";
+    public string InfoShards { get => _infoShards; private set => Set(ref _infoShards, value); }
+
+    // Предупреждение строки «Файлы шарда»: ⚠ + список отсутствующих шардов (или пусто) (S6).
+    private string _infoShardWarning = "";
+    public string InfoShardWarning { get => _infoShardWarning; private set => Set(ref _infoShardWarning, value); }
+
+    // Строка «Не учтено»: «не учтено N GiB» из UnknownBytes, только если > 0 (S6, Q5).
+    private string _infoUnaccounted = "";
+    public string InfoUnaccounted { get => _infoUnaccounted; private set => Set(ref _infoUnaccounted, value); }
+
     // ==================== Загрузка модели ====================
 
     private async Task LoadModelAsync(ModelEntry? m)
@@ -62,6 +78,7 @@ namespace LlmScanHelper.ViewModels
         _currentPath = null;
         InfoArch = InfoBlocks = InfoMaxCtx = InfoFileSize = InfoMtp = InfoTools =
           InfoToolsFull = InfoMultimodal = InfoReasoning = "-";
+        InfoQuantization = InfoShards = InfoShardWarning = InfoUnaccounted = "-";
         InfoToolsTooltip = "";
         MtpAvailable = false;
         MtpChecked = false;
@@ -194,21 +211,110 @@ namespace LlmScanHelper.ViewModels
           : AliasBuilder.MakeAlias(m.FileName);
         _suppressAliasEdit = false;
 
-        InfoArch = g.Arch;
-        InfoBlocks = g.BlockCount.ToString();
-        InfoMaxCtx = g.ContextLength.ToString();
-        InfoFileSize = $"{g.FileSize / GiB:F2} GiB";
-        InfoMtp = FormatInfoMtp(g);
-        InfoMultimodal = MmprojAvailable ? "да" : "нет";
-        InfoReasoning = g.HasReasoning ? "да" : "нет";
-        // Добавляем имя файла и квантование
-        InfoFileName = m.FileName;
-        InfoQuantization = KvK; // квантование K
+        ApplyInfoSection(g, m.FileName);
       }
       finally
       {
         _suppressSave = false;
       }
+    }
+
+    // ==================== Инфо-строки модели (S6) ====================
+
+    /// <summary>
+    /// Заполняет инфо-строки правой панели: архитектура, блоки, контекст, размер, MTP,
+    /// мультимодальность, рассуждения, имя файла, квантование модели и статус шардов.
+    /// Выделяет отдельным методом, чтобы тесты могли подставить GGUF через _gguf/_currentPath
+    /// и проверить вывод без парсинга реального файла.
+    /// </summary>
+    private void ApplyInfoSection(GgufInfo g, string fileName)
+    {
+      InfoArch = g.Arch;
+      InfoBlocks = g.BlockCount.ToString();
+      InfoMaxCtx = g.ContextLength.ToString();
+      InfoFileSize = $"{g.FileSize / GiB:F2} GiB";
+      InfoMtp = FormatInfoMtp(g);
+      InfoMultimodal = MmprojAvailable ? "да" : "нет";
+      InfoReasoning = g.HasReasoning ? "да" : "нет";
+
+      InfoFileName = fileName;
+      ApplyQuantizationInfo(g, fileName);
+      ApplyShardInfo(g);
+      ApplyUnaccountedInfo(g);
+    }
+
+    /// <summary>
+    /// Хук для регрессионных тестов (S6): подставляет GGUF через _gguf/_currentPath и переcomputes
+    /// инфо-строки, чтобы проверить вывод VM без парсинга реального GGUF-файла.
+    /// </summary>
+    internal void RefreshModelInfoForTest(GgufInfo g, string fileName)
+    {
+      _gguf = g;
+      _currentPath = "Models/" + fileName;
+      ApplyInfoSection(g, fileName);
+    }
+
+    /// <summary>Квантование модели из Core (S5): метка в строку, детали — в тултип (S6).</summary>
+    private void ApplyQuantizationInfo(GgufInfo g, string fileName)
+    {
+      var q = QuantizationAnalyzer.Analyze(g, fileName);
+
+      InfoQuantization = q.Label;
+
+      var notes = new System.Text.StringBuilder(ToolTips.QuantizationRow);
+      notes.Append("\n\n");
+      notes.Append(SourceLabel(q.Source));
+      if (q.Source != QuantizationSource.NoData)
+        notes.Append(": bpw ").Append(q.Bpw.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
+      notes.Append('\n');
+
+      // Распределение типов с долями (топ-4 по байтам).
+      if (q.TypeShares.Count > 0)
+      {
+        notes.Append("распределение типов: ");
+        notes.Append(string.Join(", ", q.TypeShares.Select(s =>
+          $"{s.TypeName} {s.Share * 100:F1}%")));
+        notes.Append('\n');
+      }
+
+      // Все заметки из Core.
+      foreach (var n in q.Notes)
+        notes.Append(n).Append('\n');
+
+      InfoQuantizationTooltip = notes.ToString();
+    }
+
+    private static string SourceLabel(QuantizationSource source) => source switch
+    {
+      QuantizationSource.Metadata => "из GGUF (general.file_type)",
+      QuantizationSource.Guessed => "оценка по весам (body-тензоры)",
+      _ => "нет данных",
+    };
+
+    /// <summary>Строка «Файлы шарда»: одиночная модель / набор / предупреждение о нехватке (S6).
+    /// Статус набора — из GGUF (SplitStatus/SplitCount/MissingShardPaths), UI только форматирует.
+    /// </summary>
+    private void ApplyShardInfo(GgufInfo g)
+    {
+      InfoShards = g.SplitStatus == SplitStatus.NotApplicable ? "1 файл" : PluralFiles(g.SplitCount, "файлов");
+
+      var missing = g.MissingShardPaths;
+      InfoShardWarning = missing.Count > 0
+        ? "⚠ не хватает шардов: " + string.Join(", ", missing)
+        : "";
+    }
+
+    private static string PluralFiles(int n, string genitive) => n switch
+    {
+      1 => $"{n} файл",
+      >= 2 and <= 4 => $"{n} {genitive} (shards)",
+      _ => $"{n} {genitive} (shards)",
+    };
+
+    /// <summary>«Учтено N GiB» из UnknownBytes — только если байты реально есть (S6, Q5).</summary>
+    private void ApplyUnaccountedInfo(GgufInfo g)
+    {
+      InfoUnaccounted = g.UnknownBytes > 0 ? $"не учтено {g.UnknownBytes / GiB:F2} GiB" : "";
     }
 
     // Строка MTP в инфо: да/нет + тип и число доп. токенов, если удалось распознать.
