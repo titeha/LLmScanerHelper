@@ -29,7 +29,7 @@
               Padding="10,4"
               ToolTip.Tip="{x:Static t:ToolTips.EditCatalog}" />
     </StackPanel>
-    <TextBlock Text="Активный каталог используется при сканировании и загрузке моделей."
+    <TextBlock Text="Сканируются все каталоги из списка; найденные модели объединяются."
                FontSize="13" Foreground="DimGray" />
   </StackPanel>
 </UserControl>

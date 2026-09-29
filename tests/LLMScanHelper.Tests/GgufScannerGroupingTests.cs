@@ -278,7 +278,7 @@ public class GgufScannerGroupingTests
         MakeFile(a.Dir, "alpha.gguf", 4);
         MakeFile(b.Dir, "beta.gguf", 8);
 
-        var res = GgufScannerService.Scan(new[] { a.Dir, b.Dir });
+        var res = GgufScannerService.ScanCatalogs(new[] { a.Dir, b.Dir });
 
         Assert.Null(res.Error);
         Assert.Empty(res.Warnings);
@@ -301,7 +301,7 @@ public class GgufScannerGroupingTests
         for (int i = 1; i <= 2; i++) MakeFile(a.Dir, $"model-{i:D5}-of-{2:D5}.gguf", i);
         for (int i = 1; i <= 2; i++) MakeFile(b.Dir, $"model-{i:D5}-of-{2:D5}.gguf", i + 10);
 
-        var res = GgufScannerService.Scan(new[] { a.Dir, b.Dir });
+        var res = GgufScannerService.ScanCatalogs(new[] { a.Dir, b.Dir });
 
         Assert.Null(res.Error);
         Assert.Equal(2, res.Models.Count);
@@ -321,7 +321,7 @@ public class GgufScannerGroupingTests
         using var a = new TempDir();
         MakeFile(a.Dir, "alpha.gguf", 4);
 
-        var res = GgufScannerService.Scan(new[] { "", "   ", a.Dir });
+        var res = GgufScannerService.ScanCatalogs(new[] { "", "   ", a.Dir });
 
         Assert.Null(res.Error);
         Assert.Single(res.Models);
@@ -331,7 +331,7 @@ public class GgufScannerGroupingTests
     [Fact]
     public void Скан_без_каталогов_даёт_ошибку()
     {
-        var res = GgufScannerService.Scan(new string[0]);
+        var res = GgufScannerService.ScanCatalogs(new string[0]);
 
         Assert.NotNull(res.Error);
         Assert.Empty(res.Models);
@@ -344,7 +344,7 @@ public class GgufScannerGroupingTests
         MakeFile(a.Dir, "alpha.gguf", 4);
         string missing = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "no-such-folder-" + Guid.NewGuid().ToString("N"));
 
-        var res = GgufScannerService.Scan(new[] { a.Dir, missing });
+        var res = GgufScannerService.ScanCatalogs(new[] { a.Dir, missing });
 
         // модели из рабочего каталога не теряются...
         Assert.Single(res.Models);
@@ -353,5 +353,40 @@ public class GgufScannerGroupingTests
         // ошибка несуществующего каталога — в предупреждениях
         Assert.Equal(1, res.Warnings.Count);
         Assert.Contains(missing, res.Warnings[0]);
+    }
+
+    [Fact]
+    public void Скан_c_null_даёт_ошибку()
+    {
+        var res = GgufScannerService.ScanCatalogs(null);
+
+        Assert.NotNull(res.Error);
+        Assert.Equal("Каталог с моделями не указан", res.Error);
+        Assert.Empty(res.Models);
+    }
+
+    [Fact]
+    public void Скан_полный_провал_всех_каталогов_даёт_ошибку()
+    {
+        string missing1 = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "no-such-folder-" + Guid.NewGuid().ToString("N"));
+        string missing2 = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "no-such-folder-" + Guid.NewGuid().ToString("N"));
+
+        var res = GgufScannerService.ScanCatalogs(new[] { missing1, missing2 });
+
+        Assert.NotNull(res.Error);
+        Assert.StartsWith("Не прочитать каталоги моделей: ", res.Error);
+        Assert.Contains(missing1, res.Error);
+        Assert.Contains(missing2, res.Error);
+        Assert.Empty(res.Models);
+    }
+
+    [Fact]
+    public void Скан_пустой_список_даёт_ошибку_каталог_не_указан()
+    {
+        var res = GgufScannerService.ScanCatalogs(new List<string>());
+
+        Assert.NotNull(res.Error);
+        Assert.Equal("Каталог с моделями не указан", res.Error);
+        Assert.Empty(res.Models);
     }
 }

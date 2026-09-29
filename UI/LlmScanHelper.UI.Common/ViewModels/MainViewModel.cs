@@ -292,17 +292,17 @@ namespace LlmScanHelper.ViewModels
     {
       StatusText = "Сканирование моделей...";
       // Логика «и»: сканируем все каталоги и объединяем найденные модели.
-      var res = await Task.Run(() => GgufScannerService.Scan(Catalogs));
+      var res = await Task.Run(() => GgufScannerService.ScanCatalogs(Catalogs));
+
+      if (res.Error != null)
+      {
+        StatusText = res.Error;
+        return;
+      }
 
       Models.Clear();
       foreach (var m in res.Models)
         Models.Add(m);
-
-      if (res.Error != null)
-      {
-        StatusText = "Не указано ни одного каталога с моделями: " + res.Error;
-        return;
-      }
 
       if (res.Warnings.Count > 0)
         StatusText = "Сканирование завершено с предупреждениями: " + string.Join("; ", res.Warnings);

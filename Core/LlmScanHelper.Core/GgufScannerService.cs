@@ -28,12 +28,16 @@ namespace LlmScanHelper.Models
 
     /// <summary>Сканирует все каталоги и объединяет найденные модели (логика «и»).
     /// Пустые/пробельные каталоги пропускаются. Ошибка чтения одного каталога не скрывает
-    /// модели, успешно найденные в остальных — они попадают в Warnings.</summary>
-    public static ScanResult Scan(IEnumerable<string> roots)
+    /// модели, успешно найденные в остальных — они попадают в Warnings.
+    /// <see cref="ScanResult.Error"/> устанавливается, только если не задано ни одного
+    /// непустого каталога или ни один каталог не прочитался.</summary>
+    public static ScanResult ScanCatalogs(IEnumerable<string>? roots)
     {
       var models = new List<ModelEntry>();
       var warnings = new List<string>();
+      var errors = new List<string>();
       bool anyRoot = false;
+      bool readable = false;
 
       foreach (var root in roots ?? Enumerable.Empty<string>())
       {
@@ -41,9 +45,15 @@ namespace LlmScanHelper.Models
         anyRoot = true;
         var res = Scan(root);
         if (res.Error != null)
+        {
           warnings.Add(root + ": " + res.Error);
+          errors.Add(root + ": " + res.Error);
+        }
         else
+        {
+          readable = true;
           models.AddRange(res.Models);
+        }
       }
 
       if (!anyRoot)
@@ -54,6 +64,9 @@ namespace LlmScanHelper.Models
         int c = string.Compare(x.DisplayName, y.DisplayName, StringComparison.OrdinalIgnoreCase);
         return c != 0 ? c : string.Compare(x.FullPath, y.FullPath, StringComparison.OrdinalIgnoreCase);
       });
+
+      if (!readable && errors.Count > 0)
+        return new ScanResult { Error = "Не прочитать каталоги моделей: " + string.Join("; ", errors) };
 
       return new ScanResult { Models = models, Warnings = warnings };
     }
