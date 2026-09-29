@@ -67,12 +67,13 @@ dotnet build -c Release UI/LlmScanHelper.UI.Linux -r linux-x64 --self-contained 
 **UI.Common** (`UI/LlmScanHelper.UI.Common/`, net10.0) — MainViewModel и абстракции, без WPF;
 **UI.Windows** (`UI/LlmScanHelper.UI.Windows/`, net10.0-windows) — WPF-оболочка (Windows);
 **UI.Linux** (`UI/LlmScanHelper.UI.Linux/`, net10.0) — Avalonia-оболочка (Linux);
-**Tests** (`tests/LLMScanHelper.Tests/`, net10.0) — xUnit (23 теста).
+**Tests** (`tests/LLMScanHelper.Tests/`, net10.0) — xUnit (211 тестов).
 
 | Файл | Назначение |
 |---|---|
 | `Core/LlmScanHelper.Core/GgufInfo.cs` | парсер GGUF (архитектура, блоки, KV, MTP/nextn, reasoning, tools) |
-| `Core/LlmScanHelper.Core/GgufScannerService.cs` | обход дерева моделей, издатель, поиск mmproj |
+| `Core/LlmScanHelper.Core/GgufScannerService.cs` | обход дерева моделей, **группировка split-наборов** (`stem-0000N-of-0000M.gguf`) в одну запись, издатель, поиск mmproj, draft-файлы |
+| `Core/LlmScanHelper.Core/GgufModelReader.cs` | агрегация multi-file: метаданные из шарда `split.no==0`, тензоры со всех шардов, размер = Σ fileLen, сверки split.count/tensors.count, статус `SplitStatus` (в т. ч. `Incomplete`) |
 | `Core/LlmScanHelper.Core/GpuService.cs` | `llama-server --list-devices` (парсинг CUDA-id и свободной VRAM) |
 | `Core/LlmScanHelper.Core/LayerEstimator.cs` | грубая оценка раскладки блоков (веса+KV) по картам |
 | `Core/LlmScanHelper.Core/Command/LlamaServerCommandBuilder.cs` | строка запуска llama-server + список предупреждений (`Build`/`BuildWarnings`) — единственный источник флагов |
@@ -82,6 +83,9 @@ dotnet build -c Release UI/LlmScanHelper.UI.Linux -r linux-x64 --self-contained 
 | `Core/LlmScanHelper.Core/AliasBuilder.cs` | генератор алиаса из имени файла (убирает квант-теги) |
 | `Core/LlmScanHelper.Core/AppDefaults.cs` | константы по умолчанию (корень моделей, контекст, порт, хост) |
 | `Core/LlmScanHelper.Core/ModelTypes.cs` | доменные типы: ModelEntry, MmprojEntry, GpuDeviceInfo, GpuQueryResult |
+| `Core/LlmScanHelper.Core/GgmlTypes.cs` | таблица ggml-типов (ggml_type↔Id, bytes на тип, `Bytes`, `Bpw`) — источник истины для квантования (static_assert) |
+| `Core/LlmScanHelper.Core/LlamaFtype.cs` | соответствие `general.file_type` ↔ метки `llama_ftype`, ggml_type → ftype |
+| `Core/LlmScanHelper.Core/QuantizationInfo.cs` | определение квантования модели: метка из `general.file_type` (приоритет), оценка по body-доминанте, bpw, распределение типов, заметки о расхождении |
 | `Core/LlmScanHelper.Core/Settings/SettingsStore.cs` | JSON-хранилище (portable) |
 | `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.cs` | ядро: состояние, параметры, команды, сканирование; DI: IClipboard/IUiWindows/IFolderPicker |
 | `UI/LlmScanHelper.UI.Common/ViewModels/MainViewModel.Model.cs` | инфо о модели, загрузка, мультимодальность (mmproj) |
